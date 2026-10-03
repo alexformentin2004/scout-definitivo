@@ -1,0 +1,2157 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Scout Volley">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Scout Volley</title>
+  <style>
+    :root{
+      --bg:#0b1220; --panel:#111827; --panel2:#172033; --text:#f8fafc; --muted:#94a3b8;
+      --line:#263247; --good:#16a34a; --accent:#2563eb; --warn:#f59e0b; --bad:#dc2626; --purple:#7c3aed;
+      --safe: max(env(safe-area-inset-bottom), 10px);
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif}
+    button,input,select{font:inherit}
+    button{cursor:pointer}
+    .app{max-width:540px;margin:0 auto;min-height:100dvh;padding:calc(env(safe-area-inset-top) + 10px) 12px calc(var(--safe) + 72px)}
+    .hidden{display:none!important}
+    .topbar{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:10px}
+    .brand{font-weight:800;font-size:20px}
+    .pill{padding:7px 10px;border-radius:999px;background:#172033;color:#cbd5e1;font-size:12px}
+    h1,h2,h3{margin:0 0 10px}
+    h1{font-size:26px} h2{font-size:21px} h3{font-size:16px}
+    p{color:var(--muted);line-height:1.35}
+    .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:16px;margin:10px 0}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .stack{display:grid;gap:10px}
+    .btn{border:0;border-radius:16px;padding:15px 12px;background:#243147;color:white;font-weight:750;min-height:54px}
+    .btn.primary{background:var(--accent)}
+    .btn.good{background:var(--good)}
+    .btn.warn{background:#92400e}
+    .btn.bad{background:var(--bad)}
+    .btn.ghost{background:transparent;border:1px solid var(--line);color:#dbeafe}
+.btn.excellent{background:#14532d;border:2px solid #22c55e}
+    .btn.positive{background:#15803d}
+    .btn.neutral{background:#a16207}
+    .btn.negative{background:#c2410c}
+    .btn.error{background:#b91c1c}
+    .btn.info{background:#1d4ed8}
+    .select-court{background:#1d3a2f;border:2px solid #64748b;border-radius:18px;padding:10px;margin-top:8px}
+    .select-net{height:3px;background:#f8fafc;border-radius:2px;margin:1px 2px 9px}
+    .select-court-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+    .player-tile{position:relative;border:2px solid #475569;border-radius:15px;background:#0f172a;color:#fff;min-height:82px;padding:8px 5px;text-align:center;font-weight:800}
+    .player-tile .num{display:block;font-size:22px;line-height:1.05}
+    .player-tile .role{display:block;font-size:12px;color:#cbd5e1;margin-top:4px}
+    .player-tile .zone{position:absolute;top:5px;right:7px;font-size:10px;color:#94a3b8;font-weight:600}
+    .player-tile.preferred{border-color:#60a5fa;background:#172554}
+    .player-tile.setter{box-shadow:inset 0 0 0 2px #a78bfa}
+    .player-tile:disabled{opacity:.28;filter:grayscale(.8)}
+    .court-note{text-align:center;color:#94a3b8;font-size:11px;margin-top:8px}
+    .court-extras{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+    .smart-court{position:relative;height:350px;border:2px solid #64748b;border-radius:20px;background:#1d3a2f;overflow:hidden;margin-top:8px}
+    .smart-court::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:#f8fafc}
+    .smart-court::after{content:"";position:absolute;left:0;right:0;top:39%;border-top:2px dashed rgba(248,250,252,.38)}
+    .smart-node{position:absolute;transform:translate(-50%,-50%);width:78px;height:78px;border-radius:20px;border:3px solid rgba(255,255,255,.28);background:#0f172a;color:#fff;padding:6px;text-align:center;font-weight:850;z-index:2;transition:.12s}
+    .smart-node .num{display:block;font-size:23px;line-height:1}
+    .smart-node .role{display:block;font-size:11px;color:rgba(255,255,255,.9);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .smart-node.primary{width:94px;height:94px;border-color:#fff;box-shadow:0 0 0 3px rgba(96,165,250,.55);z-index:4}
+    .smart-node.secondary{border-color:#e9d5ff;box-shadow:0 0 0 2px rgba(167,139,250,.45);z-index:3}
+    .smart-node.setter-main{left:50%!important;top:51%!important;width:122px;height:122px;border-radius:32px;border:4px solid #f5f3ff;background:#6d28d9;box-shadow:0 0 0 5px rgba(167,139,250,.30);z-index:7}
+    .smart-node.setter-main .num{font-size:34px}
+    .smart-node.setter-main .role{font-size:13px}
+    .smart-node:disabled{opacity:.24;filter:grayscale(.8)}
+    .smart-node.role-p{background:#6d28d9}
+    .smart-node.role-o{background:#c2410c}
+    .smart-node.role-b1{background:#1d4ed8}
+    .smart-node.role-b2{background:#0369a1}
+    .smart-node.role-c1{background:#047857}
+    .smart-node.role-c2{background:#0f766e}
+    .smart-node.role-l{background:#a16207}
+    .smart-node .attack-tag{display:block;margin:5px auto 0;padding:2px 5px;border-radius:999px;background:rgba(15,23,42,.65);font-size:9px;color:#fff;max-width:92%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .setter-choice-note{margin-top:8px;text-align:center;font-size:12px;color:#ddd6fe;font-weight:700}
+    .setter-quick{display:block;width:100%;min-height:74px;margin:0 0 10px;border:3px solid #ddd6fe;border-radius:20px;background:#6d28d9;color:white;font-weight:900;font-size:18px}
+    .setter-quick small{display:block;font-size:11px;font-weight:650;color:#ede9fe;margin-top:3px}
+    .setter-fixed-slot{margin:0 0 10px}
+    .court-point-actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:10px}
+    .court-point-actions .btn{min-height:58px;font-size:15px}
+
+    .smart-court-label{position:absolute;left:8px;top:8px;padding:4px 7px;border-radius:999px;background:rgba(15,23,42,.78);font-size:10px;color:#cbd5e1;z-index:8}
+    .smart-hint{text-align:center;color:#94a3b8;font-size:11px;margin-top:9px}
+    .smart-legend{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:7px}
+    .smart-legend span{font-size:10px;color:#cbd5e1}
+    .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;background:#60a5fa}
+    .dot.alt{background:#a78bfa}
+    .btn.big{min-height:68px;font-size:17px}
+    .btn:active{transform:scale(.985)}
+    .input{width:100%;padding:14px;border-radius:14px;border:1px solid var(--line);background:#0d1525;color:white}
+    label{display:block;font-size:12px;color:#cbd5e1;margin:10px 0 5px}
+    .screen{display:none}.screen.active{display:block}
+    .scorebar{position:sticky;top:calc(env(safe-area-inset-top) + 2px);z-index:20;background:rgba(11,18,32,.96);backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:16px;padding:10px;margin-bottom:10px}
+    .scoreline{display:grid;grid-template-columns:minmax(64px,1fr) auto minmax(64px,1fr);align-items:center;gap:5px}
+    .score{font-size:29px;font-weight:900;letter-spacing:.5px}
+    .score-editor{display:flex;align-items:center;justify-content:center;gap:5px;min-width:188px}
+    .score-side{display:flex;flex-direction:column;align-items:center;gap:2px}
+    .score-team{font-size:9px;color:#94a3b8;font-weight:800;letter-spacing:.5px}
+    .score-adjust{display:flex;align-items:center;gap:4px}
+    .score-step{width:32px;height:32px;border:1px solid #475569;border-radius:10px;background:#1e293b;color:#fff;font-size:19px;font-weight:900;padding:0;line-height:1}
+    .score-step:active{transform:scale(.94)}
+    .score-num{min-width:26px;text-align:center;font-size:27px;font-weight:900;line-height:1}
+    .score-sep{font-size:22px;font-weight:900;margin-top:12px}
+    .center{text-align:center}.right{text-align:right}
+    .subline{display:flex;justify-content:space-between;color:#cbd5e1;font-size:12px;margin-top:5px}
+    .court{background:#1f3b2f;border:2px solid #64748b;border-radius:14px;padding:8px;margin-top:8px}
+    .net{height:2px;background:#e2e8f0;margin:2px 0 8px}
+    .courtgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .pos{background:rgba(15,23,42,.82);border:1px solid #334155;border-radius:12px;padding:8px;text-align:center;min-height:52px}
+    .pos b{display:block;font-size:16px}.pos span{font-size:11px;color:#cbd5e1}
+    .action-title{text-align:center;margin:18px 0 8px;font-size:24px}
+    .action-context{text-align:center;color:#93c5fd;font-size:13px;margin-bottom:10px}
+    .choice{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
+    .choice.single{grid-template-columns:1fr}
+    .choice.three{grid-template-columns:repeat(3,1fr)}
+    .choice button{min-height:74px;font-size:16px}
+    .footerbar{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(540px,100%);display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px 12px calc(var(--safe));background:linear-gradient(180deg,transparent 0,#0b1220 28%)}
+    .footerbar button{min-height:48px}
+    .mini{font-size:12px;color:var(--muted)}
+    .row{display:flex;justify-content:space-between;align-items:center;gap:10px}
+    .history-item{padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+    .badge{display:inline-flex;padding:5px 8px;border-radius:999px;background:#1e293b;font-size:11px;color:#cbd5e1}
+    .stat{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--line)}
+    .stat:last-child{border-bottom:0}
+    .report-meta{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+    .report-score{font-size:30px;font-weight:900;text-align:right}
+    .report-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0}
+    .kpi{background:#172033;border:1px solid #263247;border-radius:14px;padding:10px;text-align:center}
+    .kpi b{display:block;font-size:20px;margin-bottom:3px}
+    .kpi span{font-size:10px;color:#94a3b8}
+    .report-section{margin-top:16px}
+    .report-section h3{margin-bottom:6px}
+    .quality-row{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid #263247}
+    .quality-row:last-child{border-bottom:0}
+    .quality-bar{height:6px;background:#263247;border-radius:999px;overflow:hidden;margin-top:4px}
+    .quality-fill{height:100%;background:#60a5fa;border-radius:999px}
+    .archive-card{position:relative}
+    .archive-status{display:inline-flex;padding:5px 8px;border-radius:999px;font-size:10px;font-weight:800}
+    .archive-status.done{background:#14532d;color:#dcfce7}
+    .archive-status.live{background:#7c2d12;color:#ffedd5}
+    .archive-actions{display:grid;grid-template-columns:1.35fr 1fr;gap:8px;margin-top:12px}
+    .export-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:8px}
+    .export-actions .btn{min-height:44px;padding:8px 6px;font-size:11px}
+    .report-export-actions{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin-top:12px}
+    .report-export-actions .btn{min-height:44px;padding:8px 6px;font-size:11px}
+    .archive-toolbar{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+    .archive-toolbar .btn{min-height:48px}
+    @media (max-width:390px){.export-actions,.report-export-actions{grid-template-columns:1fr 1fr}.export-actions .btn:last-child,.report-export-actions .btn:last-child{grid-column:1/-1}}
+    .archive-date{font-size:11px;color:#94a3b8}
+    .section-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+    .section-tabs .active-tab{outline:3px solid #60a5fa}
+    .stats-nav-wrap{overflow-x:auto;margin:0 -4px 10px;padding:0 4px 4px}
+    .stats-nav{display:flex;gap:7px;min-width:max-content}
+    .stats-nav .btn{min-height:40px;padding:8px 12px}
+    .stats-nav .active-tab{outline:3px solid #60a5fa;background:#1e3a5f}
+    .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:10px 0}
+    .metric-card{background:#172033;border:1px solid #263247;border-radius:15px;padding:11px}
+    .metric-card .value{font-size:23px;font-weight:900}
+    .metric-card .label{font-size:10px;color:#94a3b8;margin-top:3px}
+    .metric-card .sub{font-size:10px;color:#cbd5e1;margin-top:5px}
+    .report-table{width:100%;border-collapse:collapse;font-size:12px}
+    .report-table th{font-size:10px;color:#94a3b8;text-align:left;padding:8px 6px;border-bottom:1px solid #334155;white-space:nowrap}
+    .report-table td{padding:9px 6px;border-bottom:1px solid #263247;vertical-align:top}
+    .report-table td.num,.report-table th.num{text-align:right}
+    .table-wrap{overflow-x:auto;margin-top:6px}
+    .player-card{border:1px solid #263247;border-radius:15px;padding:11px;margin:9px 0;background:#111a2a}
+    .player-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+    .player-name{font-weight:900}
+    .role-chip{display:inline-flex;padding:4px 7px;border-radius:999px;background:#1e293b;font-size:10px;font-weight:800}
+    .mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+    .mini-stat{background:#172033;border-radius:10px;padding:7px;text-align:center}
+    .mini-stat b{display:block;font-size:16px}
+    .mini-stat span{font-size:9px;color:#94a3b8}
+    .rotation-card{border:1px solid #263247;border-radius:15px;padding:11px;margin:9px 0}
+    .rotation-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+    .sequence-card{border:1px solid #263247;border-radius:14px;padding:10px;margin:8px 0;background:#111a2a}
+    .sequence-line{font-weight:800;line-height:1.35}
+    .sequence-meta{display:flex;justify-content:space-between;gap:8px;margin-top:6px;font-size:10px;color:#94a3b8}
+    .section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;margin-bottom:7px}
+    .section-title:first-child{margin-top:0}
+    .section-title h3{margin:0}
+    .muted-note{font-size:10px;color:#94a3b8;line-height:1.35}
+    .positive-text{color:#86efac}
+    .negative-text{color:#fca5a5}
+    .setter-summary{border:1px solid #4c1d95;background:#241447;border-radius:16px;padding:12px;margin-bottom:12px}
+    .setter-summary h3{margin:0 0 7px;color:#ddd6fe}
+    .setter-summary p{margin:5px 0;font-size:12px;line-height:1.45;color:#e2e8f0}
+    .setter-explain{background:#111827;border-left:4px solid #8b5cf6;border-radius:10px;padding:9px 10px;margin:8px 0 12px;font-size:11px;line-height:1.45;color:#cbd5e1}
+    .setter-explain b{color:#f5f3ff}
+    .setter-matrix{width:100%;border-collapse:collapse;font-size:11px;min-width:520px}
+    .setter-matrix th,.setter-matrix td{padding:7px 6px;border-bottom:1px solid #263247;text-align:right}
+    .setter-matrix th:first-child,.setter-matrix td:first-child{text-align:left;position:sticky;left:0;background:#111a2a}
+    .setter-matrix th{font-size:9px;color:#94a3b8;white-space:nowrap}
+    .setter-insight{display:flex;gap:8px;align-items:flex-start;padding:9px 0;border-bottom:1px solid #263247}
+    .setter-insight:last-child{border-bottom:0}
+    .setter-insight .mark{width:24px;height:24px;border-radius:8px;background:#312e81;display:flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}
+    .setter-insight .txt{font-size:11px;line-height:1.4}
+    .role-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+    .player-row{display:grid;grid-template-columns:70px 1fr 110px 42px;gap:6px;margin-bottom:7px}
+    .player-row input,.player-row select{min-width:0;padding:10px;border-radius:10px;border:1px solid var(--line);background:#0d1525;color:white}
+    .tiny{padding:8px!important;min-height:0!important}
+    .toast{position:fixed;top:calc(env(safe-area-inset-top) + 10px);left:50%;transform:translateX(-50%) translateY(-20px);opacity:0;background:#0f172a;border:1px solid #334155;border-radius:999px;padding:10px 15px;z-index:99;transition:.2s;pointer-events:none}
+    .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+    .nav{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:16px}
+    .nav button{font-size:12px;padding:10px 4px}
+    @media (max-width:390px){
+      .choice button{min-height:58px;font-size:14px}
+      .score{font-size:25px}
+      .score-editor{min-width:168px;gap:3px}
+      .score-step{width:28px;height:30px;font-size:17px}
+      .score-num{font-size:24px;min-width:23px}
+      .player-row{grid-template-columns:58px 1fr 92px 38px}
+    }
+  </style>
+</head>
+<body>
+<div id="toast" class="toast"></div>
+<div class="app">
+  <section id="home" class="screen active">
+    <div class="topbar"><div class="brand">Scout Volley</div><div class="pill">v1.1</div></div>
+    <div class="card">
+      <h1>Scout squadra + palleggiatrice</h1>
+      <p>Prototipo mobile-first con avanzamento automatico a ogni tap.</p>
+      <div class="stack">
+        <button class="btn primary big" onclick="go('newMatch')">Nuova partita</button>
+        <button id="resumeBtn" class="btn big hidden" onclick="resumeMatch()">Riprendi partita</button>
+      </div>
+    </div>
+    <div class="grid2">
+      <button class="btn" onclick="go('team')">Squadra</button>
+      <button class="btn" onclick="go('archive')">Archivio</button>
+      <button class="btn" onclick="go('stats')">Statistiche</button>
+      <button class="btn ghost" onclick="resetAll()">Azzera dati demo</button>
+    </div>
+  </section>
+
+  <section id="team" class="screen">
+    <div class="topbar"><button class="btn ghost tiny" onclick="go('home')">← Home</button><h2>Squadra</h2><span></span></div>
+    <div class="card">
+      <label>Nome squadra</label><input id="teamName" class="input" placeholder="Es. Volley Club">
+      <p class="mini">Inserisci almeno le 7 giocatrici principali. Ruoli: P, O, B1, B2, C1, C2, L.</p>
+      <div id="playersEditor"></div>
+      <button class="btn ghost" onclick="addPlayerRow()">+ Aggiungi giocatrice</button>
+      <button class="btn primary" onclick="saveTeam()">Salva squadra</button>
+    </div>
+  </section>
+
+  <section id="newMatch" class="screen">
+    <div class="topbar"><button class="btn ghost tiny" onclick="go('home')">← Home</button><h2>Nuova partita</h2><span></span></div>
+    <div class="card">
+      <label>Avversario</label><input id="opponent" class="input" placeholder="Nome avversario">
+      <label>Set iniziale</label><select id="setNo" class="input"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select>
+      <label>Rotazione iniziale</label>
+      <div class="grid3" id="rotationPicker">
+        <button class="btn tiny" data-rot="P1">P1</button><button class="btn tiny" data-rot="P6">P6</button><button class="btn tiny" data-rot="P5">P5</button>
+        <button class="btn tiny" data-rot="P4">P4</button><button class="btn tiny" data-rot="P3">P3</button><button class="btn tiny" data-rot="P2">P2</button>
+      </div>
+      <label>Chi serve per primo?</label>
+      <div class="grid2">
+        <button id="serveUs" class="btn" onclick="selectServe(true)">Noi</button>
+        <button id="serveThem" class="btn" onclick="selectServe(false)">Avversari</button>
+      </div>
+      <label>Palleggiatrice da seguire</label><select id="setterSelect" class="input"></select>
+      <button class="btn primary big" style="margin-top:14px" onclick="startMatch()">Inizia set</button>
+    </div>
+  </section>
+
+  <section id="live" class="screen">
+    <div class="scorebar">
+      <div class="scoreline">
+        <div><b id="setLabel">SET 1</b><div class="mini" id="phaseLabel"></div></div>
+        <div class="score-editor" aria-label="Correzione punteggio">
+          <div class="score-side">
+            <span class="score-team">NOI</span>
+            <div class="score-adjust">
+              <button class="score-step" type="button" onclick="adjustScore('us',-1)" aria-label="Togli un punto alla nostra squadra">−</button>
+              <span class="score-num" id="ourScore">0</span>
+              <button class="score-step" type="button" onclick="adjustScore('us',1)" aria-label="Aggiungi un punto alla nostra squadra">+</button>
+            </div>
+          </div>
+          <span class="score-sep">:</span>
+          <div class="score-side">
+            <span class="score-team">AVV</span>
+            <div class="score-adjust">
+              <button class="score-step" type="button" onclick="adjustScore('them',-1)" aria-label="Togli un punto agli avversari">−</button>
+              <span class="score-num" id="theirScore">0</span>
+              <button class="score-step" type="button" onclick="adjustScore('them',1)" aria-label="Aggiungi un punto agli avversari">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="right"><b id="rotationLabel">P1</b><div class="mini" id="setterLine"></div></div>
+      </div>
+      <div class="subline"><span id="serveLabel"></span><span id="stateLabel"></span></div>
+    </div>
+
+    <div class="card">
+      <h2 id="actionTitle" class="action-title">—</h2>
+      <div id="actionContext" class="action-context"></div>
+      <div id="choices" class="choice"></div>
+    </div>
+
+    <div class="card">
+      <div class="row"><h3>Rally corrente</h3><span class="badge" id="eventCount">0 eventi</span></div>
+      <div id="miniHistory" class="mini">Nessun evento.</div>
+    </div>
+
+    <div class="footerbar">
+      <button class="btn ghost" onclick="undoEvent()">↶ Annulla</button>
+      <button class="btn ghost" onclick="openSpecial()">⋯ Altro</button>
+      <button class="btn ghost" onclick="pauseMatch()">⏸ Pausa</button>
+    </div>
+  </section>
+
+  <section id="stats" class="screen">
+    <div class="topbar"><button id="statsBackBtn" class="btn ghost tiny" onclick="closeStats()">← Home</button><h2>Report statistiche</h2><span></span></div>
+    <div id="statsMeta" class="card"></div>
+    <div class="stats-nav-wrap">
+      <div class="stats-nav">
+        <button id="statsTab-dashboard" class="btn tiny" onclick="renderStats('dashboard')">Dashboard</button>
+        <button id="statsTab-fundamentals" class="btn tiny" onclick="renderStats('fundamentals')">Fondamentali</button>
+        <button id="statsTab-players" class="btn tiny" onclick="renderStats('players')">Giocatrici</button>
+        <button id="statsTab-rotations" class="btn tiny" onclick="renderStats('rotations')">Rotazioni</button>
+        <button id="statsTab-setter" class="btn tiny" onclick="renderStats('setter')">Palleggiatrice</button>
+        <button id="statsTab-sequences" class="btn tiny" onclick="renderStats('sequences')">Sequenze</button>
+      </div>
+    </div>
+    <div class="card">
+      <div id="statsBody"></div>
+    </div>
+  </section>
+
+  <section id="archive" class="screen">
+    <div class="topbar"><button class="btn ghost tiny" onclick="go('home')">← Home</button><h2>Archivio</h2><span></span></div>
+    <div id="archiveBody"></div>
+  </section>
+</div>
+
+<script>
+const ROT_ORDER = ['P1','P6','P5','P4','P3','P2'];
+const ROT_MATRIX = {
+  P1:{1:'P',2:'B1',3:'C2',4:'O',5:'B2',6:'C1'},
+  P6:{1:'B1',2:'C2',3:'O',4:'B2',5:'C1',6:'P'},
+  P5:{1:'C2',2:'O',3:'B2',4:'C1',5:'P',6:'B1'},
+  P4:{1:'O',2:'B2',3:'C1',4:'P',5:'B1',6:'C2'},
+  P3:{1:'B2',2:'C1',3:'P',4:'B1',5:'C2',6:'O'},
+  P2:{1:'C1',2:'P',3:'B1',4:'C2',5:'O',6:'B2'}
+};
+const OFFENSE = {
+  P1:{serve:{'Posto 4':'B1','Centro':'C2','Posto 2':'O','Pipe':'B2'},receive:{'Posto 4':'O','Centro':'C2','Posto 2':'B1','Pipe':'B2'}},
+  P6:{serve:{'Posto 4':'B2','Centro':'C2','Posto 2':'O','Pipe':'B1'},receive:{'Posto 4':'B2','Centro':'C2','Posto 2':'O','Pipe':'B1'}},
+  P5:{serve:{'Posto 4':'B2','Centro':'C1','Posto 2':'O','Pipe':'B1'},receive:{'Posto 4':'B2','Centro':'C1','Posto 2':'O','Pipe':'B1'}},
+  P4:{serve:{'Posto 4':'B2','Centro':'C1','Pipe':'B1','Opposto 2ª linea':'O'},receive:{'Posto 4':'B2','Centro':'C1','Pipe':'B1','Opposto 2ª linea':'O'}},
+  P3:{serve:{'Posto 4':'B1','Centro':'C1','Pipe':'B2','Opposto 2ª linea':'O'},receive:{'Posto 4':'B1','Centro':'C1','Pipe':'B2','Opposto 2ª linea':'O'}},
+  P2:{serve:{'Posto 4':'B1','Centro':'C2','Pipe':'B2','Opposto 2ª linea':'O'},receive:{'Posto 4':'B1','Centro':'C2','Pipe':'B2','Opposto 2ª linea':'O'}}
+};
+const DEFAULT_TEAM = {
+  name:'La mia squadra',
+  players:[
+    {number:'1',name:'Palleggiatrice',role:'P'},
+    {number:'2',name:'Opposto',role:'O'},
+    {number:'3',name:'Banda 1',role:'B1'},
+    {number:'4',name:'Banda 2',role:'B2'},
+    {number:'5',name:'Centrale 1',role:'C1'},
+    {number:'6',name:'Centrale 2',role:'C2'},
+    {number:'7',name:'Libero',role:'L'}
+  ]
+};
+let team = JSON.parse(localStorage.getItem('sv_team') || 'null') || DEFAULT_TEAM;
+let match = JSON.parse(localStorage.getItem('sv_match') || 'null');
+let setArchive = JSON.parse(localStorage.getItem('sv_set_archive') || 'null') || [];
+let activeReportId = null;
+let statsMode = 'dashboard';
+let selectedRotation='P1', selectedServe=true;
+let editorRows=[];
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='team') loadTeamEditor();
+  if(id==='newMatch') prepareNewMatch();
+  if(id==='archive') renderArchive();
+  if(id==='stats') renderStats(statsMode||'team');
+  window.scrollTo(0,0);
+}
+function toast(t){
+  const x=document.getElementById('toast'); x.textContent=t; x.classList.add('show');
+  setTimeout(()=>x.classList.remove('show'),650);
+}
+function rolePlayer(role,roster=team,matchRef=match){
+  if(role==='P' && matchRef?.setterNumber){
+    const selected=(roster.players||[]).find(p=>p.role==='P' && String(p.number)===String(matchRef.setterNumber));
+    if(selected) return selected;
+  }
+  return (roster.players||[]).find(p=>p.role===role) || {number:'?',name:role,role};
+}
+function displayPlayer(role){
+  const p=rolePlayer(role); return `#${p.number} ${p.name}`;
+}
+function playerEventData(role,extra={}){
+  const p=rolePlayer(role);
+  return {
+    role,
+    playerNumber:String(p.number??''),
+    playerName:p.name||role,
+    ...extra
+  };
+}
+function attackEventData(role,outcome){
+  return playerEventData(role,{
+    outcome,
+    target:match.context.setTarget||null,
+    setQuality:match.context.setQuality||null,
+    setterRole:match.context.secondTouch||null,
+    origin:match.context.origin||null,
+    firstTouchQuality:match.context.firstTouchQuality||null
+  });
+}
+function loadTeamEditor(){
+  document.getElementById('teamName').value=team.name||'';
+  editorRows=team.players.map(x=>({...x}));
+  renderEditor();
+}
+function addPlayerRow(){
+  editorRows.push({number:'',name:'',role:'B1'}); renderEditor();
+}
+function renderEditor(){
+  const roles=['P','O','B1','B2','C1','C2','L'];
+  const box=document.getElementById('playersEditor'); box.innerHTML='';
+  editorRows.forEach((p,i)=>{
+    const row=document.createElement('div'); row.className='player-row';
+    row.innerHTML=`<input value="${esc(p.number)}" placeholder="#">
+      <input value="${esc(p.name)}" placeholder="Nome">
+      <select>${roles.map(r=>`<option ${r===p.role?'selected':''}>${r}</option>`).join('')}</select>
+      <button class="btn bad tiny">×</button>`;
+    const [num,name,role,del]=row.children;
+    num.oninput=e=>editorRows[i].number=e.target.value;
+    name.oninput=e=>editorRows[i].name=e.target.value;
+    role.onchange=e=>editorRows[i].role=e.target.value;
+    del.onclick=()=>{editorRows.splice(i,1);renderEditor()};
+    box.appendChild(row);
+  })
+}
+function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function saveTeam(){
+  team={name:document.getElementById('teamName').value||'La mia squadra',players:editorRows.filter(p=>p.name||p.number)};
+  localStorage.setItem('sv_team',JSON.stringify(team)); toast('Squadra salvata'); go('home');
+}
+function prepareNewMatch(){
+  const setters=team.players.filter(p=>p.role==='P');
+  const sel=document.getElementById('setterSelect');
+  sel.innerHTML=(setters.length?setters:team.players).map(p=>`<option value="${esc(p.number)}">#${esc(p.number)} ${esc(p.name)}${p.role?' · '+esc(p.role):''}</option>`).join('');
+  selectRotation(selectedRotation); selectServe(selectedServe);
+}
+document.querySelectorAll('#rotationPicker button').forEach(b=>b.onclick=()=>selectRotation(b.dataset.rot));
+function selectRotation(r){
+  selectedRotation=r;
+  document.querySelectorAll('#rotationPicker button').forEach(b=>b.style.outline=b.dataset.rot===r?'3px solid #60a5fa':'none');
+}
+function selectServe(v){
+  selectedServe=v;
+  document.getElementById('serveUs').style.outline=v?'3px solid #60a5fa':'none';
+  document.getElementById('serveThem').style.outline=!v?'3px solid #60a5fa':'none';
+}
+function startMatch(){
+  const opponent=document.getElementById('opponent').value||'Avversari';
+  match={
+    id:Date.now(), opponent, set:Number(document.getElementById('setNo').value), our:0,their:0,
+    startedAt:Date.now(), updatedAt:Date.now(), initialRotation:selectedRotation, initialServing:selectedServe,
+    rotation:selectedRotation, serving:selectedServe, setterNumber:document.getElementById('setterSelect').value,
+    state:selectedServe?'serve':'receivePlayer', currentRally:[], rallies:[], scoreCorrections:[], completed:false,
+    context:{firstTouch:null,firstTouchQuality:null,secondTouch:null,setTarget:null,setQuality:null,attackRole:null,blockRole:null,origin:null}
+  };
+  persist(); renderLive(); go('live');
+}
+function isSetComplete(m){
+  if(!m) return false;
+  const target=Number(m.set)===5?15:25;
+  const hi=Math.max(Number(m.our)||0,Number(m.their)||0);
+  return hi>=target && Math.abs((Number(m.our)||0)-(Number(m.their)||0))>=2;
+}
+function archiveIdFor(m){return `set-${m.id}-${m.set}`}
+function snapshotSet(m){
+  return {
+    archiveId:archiveIdFor(m),
+    savedAt:Date.now(),
+    updatedAt:Date.now(),
+    completed:Boolean(m.completed || isSetComplete(m)),
+    teamSnapshot:JSON.parse(JSON.stringify(team)),
+    matchSnapshot:JSON.parse(JSON.stringify(m))
+  };
+}
+function syncCurrentSetToArchive(){
+  if(!match) return;
+  match.updatedAt=Date.now();
+  if(isSetComplete(match)) match.completed=true;
+  const archiveId=archiveIdFor(match);
+  const i=setArchive.findIndex(x=>x.archiveId===archiveId);
+  const preservedTeam=i>=0 && setArchive[i].teamSnapshot
+    ? JSON.parse(JSON.stringify(setArchive[i].teamSnapshot))
+    : JSON.parse(JSON.stringify(team));
+  const snap=snapshotSet(match);
+  snap.teamSnapshot=preservedTeam;
+  if(i>=0) setArchive[i]=snap; else setArchive.push(snap);
+  localStorage.setItem('sv_set_archive',JSON.stringify(setArchive));
+}
+function persist(){
+  if(match){
+    localStorage.setItem('sv_match',JSON.stringify(match));
+    syncCurrentSetToArchive();
+  }
+  updateResume();
+}
+function updateResume(){
+  const b=document.getElementById('resumeBtn');
+  if(match && !match.completed){b.classList.remove('hidden');b.textContent=`Riprendi: ${team.name} ${match.our}-${match.their} ${match.opponent}`}
+  else b.classList.add('hidden');
+}
+function resumeMatch(){if(match){renderLive();go('live')}}
+function currentPhase(){return match.serving?'Battuta / Break':'Ricezione / Side-out'}
+function renderHeader(){
+  document.getElementById('setLabel').textContent=`SET ${match.set}`;
+  document.getElementById('ourScore').textContent=match.our;
+  document.getElementById('theirScore').textContent=match.their;
+  document.getElementById('rotationLabel').textContent=match.rotation;
+  document.getElementById('phaseLabel').textContent=currentPhase()+' · selettore contestuale';
+  if(match.serving){
+    const sr=currentServerRole();
+    document.getElementById('serveLabel').textContent=`● Serviamo noi · batte ${displayPlayer(sr)}`;
+  }else{
+    document.getElementById('serveLabel').textContent='● Servono loro';
+  }
+  const setter=team.players.find(p=>String(p.number)===String(match.setterNumber))||rolePlayer('P');
+  const z=Object.entries(ROT_MATRIX[match.rotation]).find(([k,v])=>v==='P')?.[0]||'?';
+  document.getElementById('setterLine').textContent=`#${setter.number} P · zona ${z}`;
+}
+function pushEvent(type,label,data={}){
+  match.currentRally.push({type,label,data,ts:Date.now()}); persist(); renderMiniHistory();
+}
+function renderMiniHistory(){
+  document.getElementById('eventCount').textContent=`${match.currentRally.length} eventi`;
+  const arr=match.currentRally.slice(-4);
+  document.getElementById('miniHistory').innerHTML=arr.length?arr.map(x=>`<div class="history-item">${esc(x.label)}</div>`).join(''):'Nessun evento.';
+}
+function setAction(title,context,options,cols=2){
+  document.getElementById('actionTitle').textContent=title;
+  document.getElementById('actionContext').textContent=context||'';
+  document.getElementById('stateLabel').textContent=title;
+  const c=document.getElementById('choices');
+  c.className='choice '+(cols===1?'single':cols===3?'three':'');
+  c.innerHTML='';
+  options.forEach(o=>{
+    const b=document.createElement('button');
+    b.className='btn '+(o.kind||'');
+    b.innerHTML=o.html||esc(o.label);
+    b.onclick=o.onClick;
+    c.appendChild(b);
+  });
+}
+function renderLive(){
+  if(!match) return;
+  renderHeader(); renderMiniHistory();
+  const s=match.state;
+  if(s==='serve') showServe();
+  else if(s==='receivePlayer') showReceivePlayer();
+  else if(s==='receiveQuality') showQuality('Ricezione', match.context.firstTouch, q=>afterReceiveQuality(q));
+  else if(s==='secondTouch') showSecondTouch();
+  else if(s==='setTarget') showSetTarget();
+  else if(s==='setQuality') showQuality('Alzata', match.context.secondTouch, q=>afterSetQuality(q), ['Perfetta','Buona','Giocabile','Difficile','Errore']);
+  else if(s==='attackPlayer') showAttackPlayer();
+  else if(s==='attack') showAttack();
+  else if(s==='opponentResponse') showOpponentResponse();
+  else if(s==='defensePlayer') showDefensePlayer();
+  else if(s==='defenseQuality') showQuality('Difesa', match.context.firstTouch, q=>afterDefenseQuality(q), ['Perfetta','Positiva','Salvata','Negativa','Errore']);
+  else if(s==='coverPlayer') showCoverPlayer();
+  else if(s==='coverQuality') showQuality('Copertura', match.context.firstTouch, q=>afterCoverQuality(q), ['Perfetta','Positiva','Giocabile','Negativa','Errore']);
+  else if(s==='freeballPlayer') showFreeballPlayer();
+  else if(s==='freeballQuality') showQuality('Freeball', match.context.firstTouch, q=>afterFreeballQuality(q), ['Perfetta','Positiva','Giocabile','Negativa','Errore']);
+  else if(s==='blockPlayer') showBlockPlayer();
+  else if(s==='blockOutcome') showBlockOutcome();
+  else if(s==='special') showSpecial();
+}
+
+
+// Schemi di fase 5-1 tratti dalla logica di Rotazioni Volley / VBRotations.
+// Mapping sorgente -> app: s=P, o=O, h1=B1, h2=B2, m1=C2, m2=C1.
+// Le chiavi P1/P6/P5/P4/P3/P2 indicano la posizione del palleggiatore.
+const SITE_SCHEMES = {
+  receive:{
+    P1:{P:[400,385],B1:[370,300],C2:[240,140],O:[50,150],B2:[100,300],C1:[230,330]},
+    P2:{C1:[350,300],P:[350,50],B1:[100,300],C2:[20,80],O:[130,380],B2:[225,350]},
+    P3:{B2:[350,300],C1:[370,100],P:[300,50],B1:[100,300],C2:[225,350],O:[300,380]},
+    P4:{O:[380,380],B2:[100,300],C1:[70,70],P:[30,30],B1:[225,350],C2:[350,300]},
+    P5:{C2:[350,300],O:[420,50],B2:[100,300],C1:[70,50],P:[120,140],B1:[225,350]},
+    P6:{B1:[350,300],C2:[350,70],O:[280,30],B2:[100,300],C1:[225,350],P:[255,85]}
+  },
+  receiveSet:{
+    P1:{P:[300,50],B1:[450,150],C2:[225,150],O:[0,150],B2:[225,350],C1:[125,300]},
+    P2:{C1:[100,250],P:[300,50],B1:[0,150],C2:[225,150],O:[400,250],B2:[225,300]},
+    P3:{B2:[225,280],C1:[225,150],P:[300,50],B1:[0,150],C2:[125,300],O:[400,250]},
+    P4:{O:[400,250],B2:[0,150],C1:[225,150],P:[300,50],B1:[225,250],C2:[150,300]},
+    P5:{C2:[100,250],O:[450,150],B2:[0,150],C1:[225,150],P:[300,50],B1:[225,350]},
+    P6:{B1:[225,250],C2:[225,150],O:[450,150],B2:[0,150],C1:[150,250],P:[300,50]}
+  },
+  receiveHit:{
+    P1:{P:[300,50],B1:[400,50],C2:[225,100],O:[50,50],B2:[225,250],C1:[125,200]},
+    P2:{C1:[100,250],P:[300,50],B1:[50,50],C2:[225,50],O:[420,150],B2:[225,200]},
+    P3:{B2:[225,150],C1:[225,50],P:[300,50],B1:[50,50],C2:[125,300],O:[400,150]},
+    P4:{O:[400,150],B2:[50,50],C1:[225,50],P:[300,50],B1:[225,150],C2:[150,300]},
+    P5:{C2:[100,250],O:[400,50],B2:[50,50],C1:[225,50],P:[300,50],B1:[225,200]},
+    P6:{B1:[225,200],C2:[225,50],O:[400,50],B2:[50,50],C1:[150,250],P:[300,50]}
+  },
+  switchServe:{
+    P1:{P:[350,300],B1:[100,50],C2:[225,50],O:[350,50],B2:[225,350],C1:[100,300]},
+    P2:{C1:[100,300],P:[350,50],B1:[100,50],C2:[225,50],O:[350,300],B2:[225,350]},
+    P3:{B2:[225,350],C1:[225,50],P:[350,50],B1:[100,50],C2:[100,300],O:[350,300]},
+    P4:{O:[350,300],B2:[100,50],C1:[225,50],P:[350,50],B1:[225,350],C2:[100,300]},
+    P5:{C2:[100,300],O:[350,50],B2:[100,50],C1:[225,50],P:[350,300],B1:[225,350]},
+    P6:{B1:[225,350],C2:[225,50],O:[350,50],B2:[100,50],C1:[100,300],P:[350,300]}
+  },
+  switchReceive:{
+    P1:{P:[350,300],B1:[350,50],C2:[225,50],O:[100,50],B2:[225,350],C1:[100,300]},
+    P2:{C1:[100,300],P:[350,50],B1:[100,50],C2:[225,50],O:[350,300],B2:[225,350]},
+    P3:{B2:[225,350],C1:[225,50],P:[350,50],B1:[100,50],C2:[100,300],O:[350,300]},
+    P4:{O:[350,300],B2:[100,50],C1:[225,50],P:[350,50],B1:[225,350],C2:[100,300]},
+    P5:{C2:[100,300],O:[350,50],B2:[100,50],C1:[225,50],P:[350,300],B1:[225,350]},
+    P6:{B1:[225,350],C2:[225,50],O:[350,50],B2:[100,50],C1:[100,300],P:[350,300]}
+  }
+};
+
+function backRowCentralRole(){
+  const matrix=ROT_MATRIX[match.rotation];
+  return [1,5,6].map(z=>matrix[z]).find(r=>r==='C1'||r==='C2') || null;
+}
+function liberoCanBeOnCourt(){
+  if(!team.players.some(p=>p.role==='L')) return false;
+  const backC=backRowCentralRole();
+  // Se il centrale di seconda linea è il battitore, resta in campo e il libero è fuori.
+  return !(match.serving && currentServerRole()===backC);
+}
+function withLibero(layout){
+  const out={};
+  Object.entries(layout||{}).forEach(([r,p])=>out[r]=[p[0],p[1]]);
+  const central=backRowCentralRole();
+  if(central && liberoCanBeOnCourt() && out[central]){
+    out.L=[...out[central]];
+    delete out[central];
+  }
+  return out;
+}
+function normalizedLayout(layout){
+  const out={};
+  Object.entries(layout||{}).forEach(([r,p])=>{
+    out[r]=[
+      Math.max(8,Math.min(92,(p[0]/450)*100)),
+      Math.max(8,Math.min(92,(p[1]/425)*100))
+    ];
+  });
+  return out;
+}
+function siteLayout(phase){
+  return normalizedLayout(withLibero(SITE_SCHEMES[phase][match.rotation]));
+}
+function receiveLayout(){ return siteLayout('receive'); }
+function receiveSetLayout(){ return siteLayout('receiveSet'); }
+function receiveHitLayout(){ return siteLayout('receiveHit'); }
+function defenseLayout(){
+  return siteLayout(match.serving ? 'switchServe' : 'switchReceive');
+}
+function zoneFromPoint(x,y){
+  if(y <= 110){
+    if(x < 175) return 4;
+    if(x < 288) return 3;
+    return 2;
+  }
+  if(x < 175) return 5;
+  if(x < 288) return 6;
+  return 1;
+}
+function defenseZoneMap(){
+  const raw=withLibero(SITE_SCHEMES[match.serving ? 'switchServe' : 'switchReceive'][match.rotation]);
+  const map={};
+  Object.entries(raw).forEach(([role,[x,y]])=>map[zoneFromPoint(x,y)]=role);
+  return map;
+}
+function functionalCourtMap(){
+  return defenseZoneMap();
+}
+function activeRoleAtZone(z){
+  return functionalCourtMap()[z];
+}
+function activeCourt(){
+  const map=functionalCourtMap();
+  return [4,3,2,5,6,1].map(z=>({zone:z,role:map[z]})).filter(x=>x.role);
+}
+function backRowRoles(){
+  const map=defenseZoneMap();
+  return [...new Set([map[5],map[6],map[1]].filter(Boolean))];
+}
+function frontRowRoles(){
+  const map=defenseZoneMap();
+  return [...new Set([map[4],map[3],map[2]].filter(Boolean))];
+}
+function emergencySetterRoles(){
+  const candidates=['O',...frontRowRoles().filter(r=>r==='C1'||r==='C2')];
+  return [...new Set(candidates.filter(r=>team.players.some(p=>p.role===r)))];
+}
+function transitionAttackLayout(){
+  const mode=match.serving?'serve':'receive';
+  const map=OFFENSE[match.rotation][mode];
+  const coords={
+    'Posto 4':[16,18],
+    'Centro':[50,16],
+    'Posto 2':[84,18],
+    'Pipe':[50,73],
+    'Opposto 2ª linea':[84,72]
+  };
+  const out={};
+  Object.entries(map).forEach(([target,role])=>out[role]=coords[target] || [50,50]);
+
+  // Palleggiatrice vicino alla zona d'alzata, solo come riferimento/selezione del 2° tocco.
+  if(activeCourt().some(x=>x.role==='P')) out.P=[68,45];
+
+  // Mantiene visibili eventuali giocatrici fuori dalle opzioni standard.
+  const fallback=[[17,75],[32,61],[68,77],[84,60]];
+  let i=0;
+  activeCourt().forEach(({role})=>{
+    if(!out[role]) out[role]=fallback[i++] || [50,86];
+  });
+  return out;
+}
+function attackLayout(){
+  // Sul primo attacco dopo ricezione usiamo esattamente la fase "Attacco" del sito.
+  // Su contrattacco/copertura usiamo invece le zone offensive del ruolo.
+  return match.context.origin==='receive'
+    ? receiveHitLayout()
+    : transitionAttackLayout();
+}
+function setPhaseLayout(){
+  return match.context.origin==='receive'
+    ? receiveSetLayout()
+    : defenseLayout();
+}
+function setterChoiceLayout(){
+  // Posizioni REALI della fase, senza trasformare il campo in una griglia generica.
+  return setPhaseLayout();
+}
+function attackChoiceData(){
+  const mode=match.serving?'serve':'receive';
+  const map=OFFENSE[match.rotation][mode];
+  const targetByRole={};
+  Object.entries(map).forEach(([target,role])=>targetByRole[role]=target);
+  return {coords:attackLayout(),targetByRole};
+}
+
+function semanticKind(label){
+  if(['Perfetta','Ace','Punto'].includes(label)) return 'excellent';
+  if(['Positiva','Buona','Molto efficace','Errore avversario'].includes(label)) return 'positive';
+  if(['Giocabile','Efficace','Salvata','Difeso','Toccata / continua','Tocco positivo','Tocco e continua'].includes(label)) return 'neutral';
+  if(['Negativa','Difficile','Facile','Murata + coperta'].includes(label)) return 'negative';
+  if(['Errore','Murata punto','Mani fuori','Punto avversario'].includes(label)) return 'error';
+  return '';
+}
+
+function officialRoleAtZone(z){
+  return ROT_MATRIX[match.rotation][z];
+}
+function currentServerRole(){
+  // La battuta appartiene alla giocatrice ufficialmente in posto 1
+  // nella rotazione corrente. Non usa la disposizione funzionale/difensiva.
+  return officialRoleAtZone(1);
+}
+function functionalCourtMap(){
+  const base={...ROT_MATRIX[match.rotation]};
+  const hasLibero=team.players.some(p=>p.role==='L');
+  if(!hasLibero || !liberoCanBeOnCourt()) return base;
+
+  // Il libero sostituisce il centrale di seconda linea e, nel nostro assetto
+  // difensivo di riferimento, viene rappresentato in posto 5.
+  const backZones=[1,5,6];
+  const centralZone=backZones.find(z=>['C1','C2'].includes(base[z]));
+  if(centralZone!==undefined){
+    const originalZ5=base[5];
+    if(centralZone!==5) base[centralZone]=originalZ5;
+    base[5]='L';
+  }
+  return base;
+}
+function activeRoleAtZone(z){
+  return functionalCourtMap()[z];
+}
+function activeCourt(){
+  const map=functionalCourtMap();
+  return [4,3,2,5,6,1].map(z=>({zone:z,role:map[z]}));
+}
+function showPlayerCourt(title,context,{
+  preferredRoles=[],
+  secondaryRoles=[],
+  disabledRoles=[],
+  allowedZones=null,
+  allowedRoles=null,
+  onSelect,
+  extras=[],
+  layout='defense',
+  label='',
+  customLabels={},
+  setterQuick=null
+}){
+  document.getElementById('actionTitle').textContent=title;
+  document.getElementById('actionContext').textContent=context||'';
+  document.getElementById('stateLabel').textContent=title;
+  const c=document.getElementById('choices');
+  c.className='';
+  c.innerHTML='';
+
+  let coords;
+  if(layout==='receive') coords=receiveLayout();
+  else if(layout==='set') coords=setPhaseLayout();
+  else if(layout==='attack') coords=attackLayout();
+  else coords=defenseLayout();
+
+  // SLOT FISSO: quando la palleggiatrice è una scelta rapida, questo pulsante
+  // compare SEMPRE qui, sopra il campo, nella stessa identica posizione.
+  if(setterQuick){
+    const slot=document.createElement('div');
+    slot.className='setter-fixed-slot';
+    const quick=document.createElement('button');
+    quick.className='setter-quick';
+    quick.type='button';
+    quick.innerHTML=`${setterQuick.label}<small>${setterQuick.sub||''}</small>`;
+    quick.onclick=setterQuick.onClick;
+    slot.appendChild(quick);
+    c.appendChild(slot);
+  }
+
+  const field=document.createElement('div');
+  field.className='smart-court';
+  const lab=document.createElement('div');
+  lab.className='smart-court-label';
+  lab.textContent=label||'Campo';
+  field.appendChild(lab);
+
+  const roles=[...new Set(Object.keys(coords))];
+  roles.forEach(role=>{
+    const p=rolePlayer(role);
+    const zoneEntry=activeCourt().find(x=>x.role===role);
+    const disabled = disabledRoles.includes(role)
+      || (allowedZones && (!zoneEntry || !allowedZones.includes(zoneEntry.zone)))
+      || (allowedRoles && !allowedRoles.includes(role));
+    const cls=['smart-node','role-'+role.toLowerCase()];
+    if(preferredRoles.includes(role)) cls.push('primary');
+    if(secondaryRoles.includes(role)) cls.push('secondary');
+    const b=document.createElement('button');
+    b.type='button';
+    b.className=cls.join(' ');
+    b.disabled=disabled;
+    b.style.left=coords[role][0]+'%';
+    b.style.top=coords[role][1]+'%';
+    const extra=customLabels[role] ? `<span class="attack-tag">${esc(customLabels[role])}</span>` : '';
+    b.innerHTML=`<span class="num">#${esc(p.number)}</span><span class="role">${esc(role)} · ${esc(p.name)}</span>${extra}`;
+    if(!disabled) b.onclick=()=>onSelect(role,zoneEntry?.zone||null);
+    field.appendChild(b);
+  });
+  c.appendChild(field);
+
+  // Sempre disponibili sotto qualunque campo interattivo.
+  const points=document.createElement('div');
+  points.className='court-point-actions';
+  points.innerHTML=`
+    <button type="button" class="btn excellent">Punto nostra squadra</button>
+    <button type="button" class="btn error">Punto avversario</button>`;
+  points.children[0].onclick=()=>manualCourtPoint('us');
+  points.children[1].onclick=()=>manualCourtPoint('them');
+  c.appendChild(points);
+
+  const hint=document.createElement('div');
+  hint.className='smart-hint';
+  hint.textContent=layout==='attack'
+    ? 'Tocca l’attaccante nella posizione prevista per questa fase'
+    : 'Le giocatrici più probabili sono evidenziate';
+  c.appendChild(hint);
+
+  if(preferredRoles.length || secondaryRoles.length){
+    const lg=document.createElement('div'); lg.className='smart-legend';
+    if(preferredRoles.length) lg.innerHTML+='<span><i class="dot"></i>scelta principale</span>';
+    if(secondaryRoles.length) lg.innerHTML+='<span><i class="dot alt"></i>alternativa probabile</span>';
+    c.appendChild(lg);
+  }
+
+  if(extras.length){
+    const ex=document.createElement('div'); ex.className='court-extras';
+    extras.forEach(o=>{
+      const b=document.createElement('button');
+      b.type='button';
+      b.className='btn '+(o.kind||'');
+      b.textContent=o.label;
+      b.onclick=o.onClick;
+      ex.appendChild(b);
+    });
+    c.appendChild(ex);
+  }
+}
+function showServe(){
+  const serverRole=currentServerRole();
+  const record=(outcome)=>playerEventData(serverRole,{serverRole,outcome});
+  setAction(`BATTUTA — ${displayPlayer(serverRole)}`,'Come è andata?',[
+    {label:'Ace',kind:'excellent',onClick:()=>{pushEvent('serve',`Battuta ${displayPlayer(serverRole)} — Ace`,record('Ace'));finishRally('us','Ace')}},
+    {label:'Molto efficace',kind:'positive',onClick:()=>{pushEvent('serve',`Battuta ${displayPlayer(serverRole)} — Molto efficace`,record('Molto efficace'));match.state='opponentResponse';persist();renderLive()}},
+    {label:'Efficace',kind:'neutral',onClick:()=>{pushEvent('serve',`Battuta ${displayPlayer(serverRole)} — Efficace`,record('Efficace'));match.state='opponentResponse';persist();renderLive()}},
+    {label:'Facile',kind:'negative',onClick:()=>{pushEvent('serve',`Battuta ${displayPlayer(serverRole)} — Facile`,record('Facile'));match.state='opponentResponse';persist();renderLive()}},
+    {label:'Errore',kind:'error',onClick:()=>{pushEvent('serve',`Battuta ${displayPlayer(serverRole)} — Errore`,record('Errore'));finishRally('them','Errore battuta')}}
+  ]);
+}
+function receiverRoles(){return ['L','B1','B2'].filter(r=>team.players.some(p=>p.role===r))}
+function showReceivePlayer(){
+  showPlayerCourt('RICEZIONE','Chi riceve?',{
+    preferredRoles:receiverRoles(),
+    layout:'receive',
+    label:`${match.rotation} · disposizione di ricezione`,
+    onSelect:(r)=>{match.context.firstTouch=r;match.context.origin='receive';pushEvent('receivePlayer',`Ricezione — ${displayPlayer(r)}`,playerEventData(r,{origin:'receive'}));match.state='receiveQuality';persist();renderLive()}
+  });
+}
+function showQuality(kind,role,cb,labels=['Perfetta','Positiva','Giocabile','Negativa','Errore']){
+  setAction(`${kind.toUpperCase()} — ${displayPlayer(role)}`,'Qualità?',labels.map(l=>({
+    label:l,kind:semanticKind(l),onClick:()=>cb(l)
+  })));
+}
+function afterReceiveQuality(q){
+  match.context.firstTouchQuality=q;
+  pushEvent('receiveQuality',`Ricezione — ${q}`,playerEventData(match.context.firstTouch,{quality:q,origin:'receive'}));
+  if(q==='Errore') return finishRally('them','Ace / errore ricezione');
+  match.state='secondTouch'; persist(); renderLive();
+}
+function showSecondTouch(){
+  const first=match.context.firstTouch;
+  const pAvailable = first!=='P';
+  const setter=rolePlayer('P');
+
+  showPlayerCourt(
+    'SECONDO TOCCO',
+    first==='P'?'La palleggiatrice ha effettuato il primo tocco':'Chi alza / gestisce il secondo tocco?',
+    {
+      preferredRoles:pAvailable?['P']:emergencySetterRoles(),
+      secondaryRoles:pAvailable?[]:emergencySetterRoles(),
+      disabledRoles:first?[first]:[],
+      layout:'set',
+      label:`${match.rotation} · costruzione`,
+      setterQuick:pAvailable ? {
+        label:`#${esc(setter.number)} ${esc(setter.name)} · PALLEGGIATRICE`,
+        sub:'Selezione rapida alzata',
+        onClick:()=>{
+          match.context.secondTouch='P';
+          pushEvent('secondTouch',`Secondo tocco — ${displayPlayer('P')}`,playerEventData('P',{origin:match.context.origin,firstTouchQuality:match.context.firstTouchQuality}));
+          match.state='setTarget';
+          persist();
+          renderLive();
+        }
+      } : null,
+      onSelect:(r)=>{
+        match.context.secondTouch=r;
+        pushEvent('secondTouch',`Secondo tocco — ${displayPlayer(r)}`,playerEventData(r,{origin:match.context.origin,firstTouchQuality:match.context.firstTouchQuality}));
+        match.state='setTarget';
+        persist();
+        renderLive();
+      },
+      extras:[
+        {label:'Palla rimandata',kind:'neutral',onClick:()=>{pushEvent('free','Palla rimandata');match.state='opponentResponse';persist();renderLive()}},
+        {label:'Errore',kind:'error',onClick:()=>{pushEvent('secondTouchError','Errore sul secondo tocco',playerEventData(match.context.secondTouch||'P',{outcome:'Errore',origin:match.context.origin,firstTouchQuality:match.context.firstTouchQuality}));finishRally('them','Errore secondo tocco')}}
+      ]
+    }
+  );
+}
+function getAttackRoleForTarget(target){
+  const mode=match.serving?'serve':'receive';
+  return OFFENSE[match.rotation][mode][target] || null;
+}
+function showSetTarget(){
+  const mode=match.serving?'serve':'receive';
+  const map=OFFENSE[match.rotation][mode];
+  const targetByRole={};
+  Object.entries(map).forEach(([target,role])=>targetByRole[role]=target);
+
+  const standardAttackers=[...new Set(Object.values(map))];
+  const secondary=activeCourt()
+    .map(x=>x.role)
+    .filter(r=>!standardAttackers.includes(r) && r!=='L' && r!=='P');
+
+  const selectable=[...standardAttackers,...secondary];
+  if(match.context.secondTouch==='P') selectable.push('P');
+
+  const labels={};
+  Object.entries(targetByRole).forEach(([role,target])=>labels[role]=target);
+
+  const setter=rolePlayer('P');
+  const setterAttackQuick = match.context.secondTouch==='P' ? {
+    label:`#${esc(setter.number)} ${esc(setter.name)} · ATTACCO DI SECONDA`,
+    sub:'Stesso punto fisso della selezione palleggiatrice',
+    onClick:()=>{
+      match.context.attackRole='P';
+      match.context.setTarget='Secondo tocco offensivo';
+      pushEvent('setterAttack','Palleggiatrice — attacco di seconda',playerEventData('P',{secondTouchAttack:true,origin:match.context.origin,firstTouchQuality:match.context.firstTouchQuality}));
+      match.state='attack';
+      persist();
+      renderLive();
+    }
+  } : null;
+
+  showPlayerCourt(
+    `ALZATA — ${displayPlayer(match.context.secondTouch)}`,
+    'Chi viene servito?',
+    {
+      preferredRoles:standardAttackers,
+      secondaryRoles:secondary,
+      allowedRoles:[...new Set(selectable)],
+      layout:'attack',
+      label:`${match.rotation} · opzioni d’attacco`,
+      customLabels:labels,
+      setterQuick:setterAttackQuick,
+      onSelect:(r)=>{
+        if(r==='P' && match.context.secondTouch==='P'){
+          match.context.attackRole='P';
+          match.context.setTarget='Secondo tocco offensivo';
+          pushEvent('setterAttack','Palleggiatrice — attacco di seconda',playerEventData('P',{secondTouchAttack:true,origin:match.context.origin,firstTouchQuality:match.context.firstTouchQuality}));
+          match.state='attack';
+          persist();
+          renderLive();
+          return;
+        }
+        const target=targetByRole[r] || 'Emergenza';
+        match.context.setTarget=target;
+        match.context.attackRole=r;
+        pushEvent('setTarget',`Alzata → ${target} (${r})`,playerEventData(r,{target,attackerRole:r,setterRole:match.context.secondTouch,setterNumber:String(rolePlayer(match.context.secondTouch).number??''),origin:match.context.origin,firstTouchQuality:match.context.firstTouchQuality}));
+        match.state='setQuality';
+        persist();
+        renderLive();
+      }
+    }
+  );
+}
+function afterSetQuality(q){
+  match.context.setQuality=q;
+  pushEvent('setQuality',`Alzata — ${q}`,playerEventData(match.context.secondTouch,{quality:q,target:match.context.setTarget,origin:match.context.origin,firstTouchQuality:match.context.firstTouchQuality}));
+  if(q==='Errore') return finishRally('them','Errore alzata');
+  match.state=match.context.setTarget==='Emergenza'?'attackPlayer':'attack';
+  persist(); renderLive();
+}
+function showAttackPlayer(){
+  const candidates=activeCourt().map(x=>x.role).filter(r=>r!=='L');
+  showPlayerCourt('ATTACCO','Chi attacca sulla palla d’emergenza?',{
+    preferredRoles:frontRowRoles(),
+    secondaryRoles:backRowRoles().filter(r=>r==='B1'||r==='B2'||r==='O'),
+    allowedRoles:candidates,
+    layout:'attack',
+    label:`${match.rotation} · attacco d’emergenza`,
+    onSelect:(r)=>{match.context.attackRole=r;pushEvent('attackPlayer',`Attacco — ${displayPlayer(r)}`,playerEventData(r,{target:match.context.setTarget,origin:match.context.origin,firstTouchQuality:match.context.firstTouchQuality}));match.state='attack';persist();renderLive()}
+  });
+}
+function showAttack(){
+  const role=match.context.attackRole || 'B1';
+  setAction(`ATTACCO — ${displayPlayer(role)}`,match.context.setTarget||'',[
+    {label:'Punto',kind:'excellent',onClick:()=>{pushEvent('attack','Attacco — Punto',attackEventData(role,'Punto'));finishRally('us','Attacco punto')}},
+    {label:'Difeso',kind:'neutral',onClick:()=>{pushEvent('attack','Attacco — Difeso',attackEventData(role,'Difeso'));match.state='opponentResponse';persist();renderLive()}},
+    {label:'Murata + coperta',kind:'negative',onClick:()=>{pushEvent('attack','Attacco — Murata e coperta',attackEventData(role,'Murata + coperta'));match.state='coverPlayer';persist();renderLive()}},
+    {label:'Murata punto',kind:'error',onClick:()=>{pushEvent('attack','Attacco — Murata punto',attackEventData(role,'Murata punto'));finishRally('them','Muro avversario')}},
+    {label:'Toccata / continua',kind:'neutral',onClick:()=>{pushEvent('attack','Attacco — Toccato, continua',attackEventData(role,'Toccata / continua'));match.state='opponentResponse';persist();renderLive()}},
+    {label:'Errore',kind:'error',onClick:()=>{pushEvent('attack','Attacco — Errore',attackEventData(role,'Errore'));finishRally('them','Errore attacco')}}
+  ]);
+}
+function showOpponentResponse(){
+  setAction('AZIONE AVVERSARIA','Cosa succede alla nostra squadra?',[
+    {label:'Difesa',kind:'info',onClick:()=>{match.state='defensePlayer';persist();renderLive()}},
+    {label:'Muro',kind:'info',onClick:()=>{match.state='blockPlayer';persist();renderLive()}},
+    {label:'Punto avversario',kind:'error',onClick:()=>finishRally('them','Punto avversario')},
+    {label:'Errore avversario',kind:'positive',onClick:()=>finishRally('us','Errore avversario')}
+  ]);
+}
+function allOnCourtRoles(){return [...new Set(activeCourt().map(x=>x.role))]}
+function showDefensePlayer(){
+  const middleFront=defenseZoneMap()[3];
+  showPlayerCourt('DIFESA','Chi difende?',{
+    preferredRoles:backRowRoles(),
+    secondaryRoles:middleFront?[middleFront]:[],
+    layout:'defense',
+    label:`${match.rotation} · assetto difensivo`,
+    onSelect:(r)=>{match.context.firstTouch=r;match.context.origin='defense';pushEvent('defensePlayer',`Difesa — ${displayPlayer(r)}`,playerEventData(r,{origin:'defense'}));match.state='defenseQuality';persist();renderLive()}
+  });
+}
+function afterDefenseQuality(q){
+  match.context.firstTouchQuality=q;
+  pushEvent('defenseQuality',`Difesa — ${q}`,playerEventData(match.context.firstTouch,{quality:q,origin:'defense'}));
+  if(q==='Errore') return finishRally('them','Palla non difesa');
+  match.state='secondTouch'; persist();renderLive();
+}
+function showCoverPlayer(){
+  showPlayerCourt('COPERTURA','Chi copre?',{
+    preferredRoles:backRowRoles(),
+    secondaryRoles:frontRowRoles(),
+    layout:'defense',
+    label:`${match.rotation} · copertura`,
+    onSelect:(r)=>{match.context.firstTouch=r;match.context.origin='cover';pushEvent('coverPlayer',`Copertura — ${displayPlayer(r)}`,playerEventData(r,{origin:'cover'}));match.state='coverQuality';persist();renderLive()}
+  });
+}
+function afterCoverQuality(q){
+  match.context.firstTouchQuality=q;
+  pushEvent('coverQuality',`Copertura — ${q}`,playerEventData(match.context.firstTouch,{quality:q,origin:'cover'}));
+  if(q==='Errore') return finishRally('them','Copertura fallita');
+  match.state='secondTouch'; persist();renderLive();
+}
+function showFreeballPlayer(){
+  showPlayerCourt('FREEBALL','Chi effettua il primo tocco?',{
+    preferredRoles:receiverRoles(),
+    layout:'receive',
+    label:`${match.rotation} · freeball`,
+    onSelect:(r)=>{match.context.firstTouch=r;match.context.origin='freeball';pushEvent('freeballPlayer',`Freeball — ${displayPlayer(r)}`,playerEventData(r,{origin:'freeball'}));match.state='freeballQuality';persist();renderLive()}
+  });
+}
+function afterFreeballQuality(q){
+  match.context.firstTouchQuality=q;
+  pushEvent('freeballQuality',`Freeball — ${q}`,playerEventData(match.context.firstTouch,{quality:q,origin:'freeball'}));
+  if(q==='Errore') return finishRally('them','Errore su freeball');
+  match.state='secondTouch'; persist();renderLive();
+}
+function showBlockPlayer(){
+  showPlayerCourt('MURO','Chi fa il tocco decisivo?',{
+    preferredRoles:frontRowRoles(),
+    disabledRoles:backRowRoles(),
+    layout:'defense',
+    label:`${match.rotation} · prima linea`,
+    onSelect:(r)=>{match.context.blockRole=r;pushEvent('blockPlayer',`Muro — ${displayPlayer(r)}`,playerEventData(r));match.state='blockOutcome';persist();renderLive()}
+  });
+}
+function showBlockOutcome(){
+  const r=match.context.blockRole;
+  const bd=(outcome)=>playerEventData(r,{outcome});
+  setAction(`MURO — ${displayPlayer(r)}`,'Esito del tocco decisivo?',[
+    {label:'Punto',kind:'excellent',onClick:()=>{pushEvent('block','Muro — Punto',bd('Punto'));finishRally('us','Muro punto')}},
+    {label:'Tocco positivo',kind:'positive',onClick:()=>{pushEvent('block','Muro — Tocco positivo',bd('Tocco positivo'));match.state='defensePlayer';persist();renderLive()}},
+    {label:'Tocco e continua',kind:'neutral',onClick:()=>{pushEvent('block','Muro — Tocco e continua',bd('Tocco e continua'));match.state='defensePlayer';persist();renderLive()}},
+    {label:'Mani fuori',kind:'error',onClick:()=>{pushEvent('block','Muro — Mani fuori',bd('Mani fuori'));finishRally('them','Mani fuori')}},
+    {label:'Errore',kind:'error',onClick:()=>{pushEvent('block','Muro — Errore',bd('Errore'));finishRally('them','Errore muro')}}
+  ]);
+}
+function openSpecial(){if(match){match.prevState=match.state;match.state='special';persist();renderLive()}}
+function showSpecial(){
+  setAction('ALTRO','Evento speciale',[
+    {label:'Punto nostro',kind:'excellent',onClick:()=>finishRally('us','Punto manuale')},
+    {label:'Punto avversario',kind:'error',onClick:()=>finishRally('them','Punto manuale')},
+    {label:'Freeball nostra',kind:'info',onClick:()=>{pushEvent('freeball','Freeball ricevuta');match.context.firstTouch=null;match.state='freeballPlayer';persist();renderLive()}},
+    {label:'Annulla',onClick:()=>{match.state=match.prevState||'receivePlayer';persist();renderLive()}}
+  ]);
+}
+
+function manualCourtPoint(winner){
+  pushEvent(
+    'manualPoint',
+    winner==='us' ? 'Punto manuale — nostra squadra' : 'Punto manuale — avversari',
+    {winner}
+  );
+  finishRally(winner,'Punto assegnato dal pulsante rapido sotto il campo');
+}
+function adjustScore(side,delta){
+  if(!match) return;
+  if(!Array.isArray(match.scoreCorrections)) match.scoreCorrections=[];
+  const key=side==='us'?'our':'their';
+  const before=match[key]||0;
+  const after=Math.max(0,before+delta);
+  if(after===before) return;
+  match[key]=after;
+  match.completed=isSetComplete(match);
+  match.scoreCorrections.push({
+    side,
+    delta:after-before,
+    score:[match.our,match.their],
+    ts:Date.now()
+  });
+  persist();
+  renderHeader();
+  toast(`${side==='us'?'Nostro':'Avversari'} punteggio: ${after}`);
+}
+
+function rotate(){
+  const i=ROT_ORDER.indexOf(match.rotation); match.rotation=ROT_ORDER[(i+1)%ROT_ORDER.length];
+}
+function finishRally(winner,reason){
+  const wasServing=match.serving;
+  const rallyRotation=match.rotation;
+  const scoreBefore=[match.our,match.their];
+  if(winner==='us') match.our++; else match.their++;
+
+  const rally={
+    events:[...match.currentRally],
+    winner,
+    reason,
+    rotation:rallyRotation,
+    servingBefore:wasServing,
+    scoreBefore,
+    set:match.set,
+    score:[match.our,match.their],
+    endedAt:Date.now()
+  };
+  match.rallies.push(rally);
+
+  if(!wasServing && winner==='us'){match.serving=true;rotate();}
+  else if(wasServing && winner==='them'){match.serving=false;}
+
+  match.currentRally=[];
+  match.context={firstTouch:null,firstTouchQuality:null,secondTouch:null,setTarget:null,setQuality:null,attackRole:null,blockRole:null,origin:null};
+  match.state=match.serving?'serve':'receivePlayer';
+
+  if(isSetComplete(match)) match.completed=true;
+  persist();
+
+  if(match.completed) toast(`SET ${match.set} TERMINATO · salvato in Archivio`);
+  else toast(winner==='us'?'PUNTO NOI +1':'PUNTO AVVERSARI +1');
+  renderLive();
+}
+function undoEvent(){
+  if(!match) return;
+  if(match.currentRally.length){
+    match.currentRally.pop();
+    // rollback conservatively to state selector
+    match.state=match.serving?'serve':'receivePlayer';
+    match.context={firstTouch:null,firstTouchQuality:null,secondTouch:null,setTarget:null,setQuality:null,attackRole:null,blockRole:null,origin:null};
+    persist(); renderLive(); toast('Ultimo evento annullato');
+  } else toast('Nessun evento da annullare');
+}
+function pauseMatch(){persist();go('home')}
+
+
+function reportRecord(){
+  if(activeReportId) return setArchive.find(x=>x.archiveId===activeReportId) || null;
+  if(!match) return null;
+  const frozen=setArchive.find(x=>x.archiveId===archiveIdFor(match));
+  if(frozen) return frozen;
+  return {
+    archiveId:archiveIdFor(match),
+    completed:Boolean(match.completed),
+    savedAt:match.updatedAt||Date.now(),
+    teamSnapshot:JSON.parse(JSON.stringify(team)),
+    matchSnapshot:JSON.parse(JSON.stringify(match))
+  };
+}
+function archiveRecord(id){
+  if(!id) return reportRecord();
+  return setArchive.find(x=>x.archiveId===id) || null;
+}
+function currentReportMatch(){return reportRecord()?.matchSnapshot || null}
+function currentReportTeam(){return reportRecord()?.teamSnapshot || team}
+function openSetReport(id){activeReportId=id;statsMode='dashboard';go('stats')}
+function openCurrentReport(){if(!match){toast('Nessun set corrente');return}activeReportId=null;statsMode='dashboard';go('stats')}
+function closeStats(){if(activeReportId)go('archive');else go('home')}
+function formatDate(ts){
+  if(!ts)return '—';
+  try{return new Date(ts).toLocaleString('it-IT',{day:'2-digit',month:'2-digit',year:'2-digit',hour:'2-digit',minute:'2-digit'})}
+  catch{return '—'}
+}
+function pct(a,b){return b?Math.round((a/b)*100):0}
+function inc(obj,key,n=1){if(key!==null&&key!==undefined&&key!=='')obj[key]=(obj[key]||0)+n}
+function countTotal(o){return Object.values(o||{}).reduce((a,b)=>a+(Number(b)||0),0)}
+function safeNum(n){return Number.isFinite(Number(n))?Number(n):0}
+function playerKey(p){
+  if(!p)return null;
+  if(p.number!==null&&p.number!==undefined&&String(p.number)!=='')return `n:${String(p.number)}`;
+  return p.role?`r:${p.role}:${p.name||''}`:null;
+}
+function rosterPlayerByRole(role,t,m){
+  if(role==='P' && m?.setterNumber){
+    const p=(t?.players||[]).find(x=>x.role==='P'&&String(x.number)===String(m.setterNumber));
+    if(p)return p;
+  }
+  return (t?.players||[]).find(x=>x.role===role)||null;
+}
+function eventIdentity(e,t,m,roleHint=null){
+  const d=e?.data||{};
+  let role=d.role||d.serverRole||d.attackerRole||roleHint||null;
+  let number=d.playerNumber??d.number??null;
+  let name=d.playerName??null;
+  if((number===null||number===undefined||String(number)==='') && e?.label){
+    const mm=e.label.match(/#([^\s]+)/);
+    if(mm)number=mm[1];
+  }
+  let p=null;
+  if(number!==null&&number!==undefined&&String(number)!==''){
+    p=(t?.players||[]).find(x=>String(x.number)===String(number))||null;
+  }
+  if(!role && p)role=p.role;
+  if(!role && e?.label){
+    const rr=e.label.match(/\((P|O|B1|B2|C1|C2|L)\)/);
+    if(rr)role=rr[1];
+  }
+  if(!p && role)p=rosterPlayerByRole(role,t,m);
+  if(p){
+    number=String(p.number??number??'');
+    name=p.name||name||role;
+    role=p.role||role;
+  }
+  return {
+    role:role||null,
+    number:number!==null&&number!==undefined?String(number):'',
+    name:name||role||'',
+    key:playerKey({number,role,name})
+  };
+}
+function samePlayer(a,b){
+  if(!a||!b)return false;
+  if(a.number&&b.number)return String(a.number)===String(b.number);
+  return Boolean(a.role&&b.role&&a.role===b.role);
+}
+function qualityScore(kind,q){
+  const maps={
+    reception:{Perfetta:4,Positiva:3,Giocabile:2,Negativa:1,Errore:0},
+    defense:{Perfetta:4,Positiva:3,Salvata:2,Negativa:1,Errore:0},
+    coverage:{Perfetta:4,Positiva:3,Giocabile:2,Negativa:1,Errore:0},
+    freeball:{Perfetta:4,Positiva:3,Giocabile:2,Negativa:1,Errore:0},
+    set:{Perfetta:4,Buona:3,Giocabile:2,Difficile:1,Errore:0},
+    serve:{Ace:4,'Molto efficace':3,Efficace:2,Facile:1,Errore:0}
+  };
+  return maps[kind]?.[q]??null;
+}
+function avgQuality(kind,obj){
+  let n=0,sum=0;
+  Object.entries(obj||{}).forEach(([q,c])=>{
+    const s=qualityScore(kind,q);
+    if(s!==null){n+=c;sum+=(s*c)}
+  });
+  return n?Math.round((sum/n)*100)/100:null;
+}
+function parseServeOutcome(e){
+  if(e?.data?.outcome)return e.data.outcome;
+  const l=e?.label||'';
+  for(const x of ['Ace','Molto efficace','Efficace','Facile','Errore'])if(l.includes(x))return x;
+  return 'Altro';
+}
+function parseAttackOutcome(e){
+  if(e?.data?.outcome)return e.data.outcome;
+  const l=e?.label||'';
+  if(l.includes('Murata punto'))return 'Murata punto';
+  if(l.includes('Murata e coperta'))return 'Murata + coperta';
+  if(l.includes('Toccato'))return 'Toccata / continua';
+  if(l.includes('Difeso'))return 'Difeso';
+  if(l.includes('Punto'))return 'Punto';
+  if(l.includes('Errore'))return 'Errore';
+  return 'Altro';
+}
+function parseBlockOutcome(e){
+  if(e?.data?.outcome)return e.data.outcome;
+  const l=e?.label||'';
+  if(l.includes('Tocco positivo'))return 'Tocco positivo';
+  if(l.includes('Tocco e continua'))return 'Tocco e continua';
+  if(l.includes('Mani fuori'))return 'Mani fuori';
+  if(l.includes('Punto'))return 'Punto';
+  if(l.includes('Errore'))return 'Errore';
+  return 'Altro';
+}
+function emptyPlayerStat(id){
+  return {
+    identity:id,
+    serve:{n:0,outcomes:{}},
+    receive:{n:0,q:{}},
+    attack:{n:0,outcomes:{},targets:{}},
+    defense:{n:0,q:{}},
+    cover:{n:0,q:{}},
+    freeball:{n:0,q:{}},
+    block:{n:0,outcomes:{}},
+    set:{n:0,q:{},targets:{},rallyWins:0},
+    secondTouch:0
+  };
+}
+function ensurePlayerStat(map,id){
+  if(!id?.key)return null;
+  if(!map[id.key])map[id.key]=emptyPlayerStat(id);
+  return map[id.key];
+}
+function rallyOpeningContext(r,t,m){
+  let receiveQuality=null,receivePlayer=null,serveOutcome=null,servePlayer=null;
+  for(const e of (r.events||[])){
+    if(e.type==='serve' && serveOutcome===null){
+      serveOutcome=parseServeOutcome(e);servePlayer=eventIdentity(e,t,m,e.data?.serverRole||null);
+    }
+    if(e.type==='receivePlayer' && !receivePlayer)receivePlayer=eventIdentity(e,t,m);
+    if(e.type==='receiveQuality' && receiveQuality===null)receiveQuality=e.data?.quality||null;
+  }
+  return {receiveQuality,receivePlayer,serveOutcome,servePlayer};
+}
+function rallyActions(r,t,m){
+  const actions=[];
+  let firstTouch=null,firstTouchQuality=null,origin=null,secondTouch=null;
+  let setTarget=null,setTargetPlayer=null,setQuality=null,attackPlayer=null,pending=null;
+
+  const snapshot=(extra={})=>({
+    firstTouch,firstTouchQuality,origin,secondTouch,setTarget,setTargetPlayer,setQuality,attackPlayer,
+    setterAttack:false,attackOutcome:null,setError:false,...extra
+  });
+  const resetBuild=()=>{
+    secondTouch=null;setTarget=null;setTargetPlayer=null;setQuality=null;attackPlayer=null;pending=null;
+  };
+
+  for(const e of (r.events||[])){
+    if(['receivePlayer','defensePlayer','coverPlayer','freeballPlayer'].includes(e.type)){
+      firstTouch=eventIdentity(e,t,m);
+      origin=e.data?.origin||(e.type==='receivePlayer'?'receive':e.type==='defensePlayer'?'defense':e.type==='coverPlayer'?'cover':'freeball');
+      firstTouchQuality=null;
+      resetBuild();
+      continue;
+    }
+    if(['receiveQuality','defenseQuality','coverQuality','freeballQuality'].includes(e.type)){
+      firstTouchQuality=e.data?.quality||firstTouchQuality;
+      if(!firstTouch?.key)firstTouch=eventIdentity(e,t,m);
+      continue;
+    }
+    if(e.type==='secondTouch'){
+      secondTouch=eventIdentity(e,t,m);
+      setTarget=null;setTargetPlayer=null;setQuality=null;attackPlayer=null;pending=null;
+      continue;
+    }
+    if(e.type==='setTarget'){
+      setTarget=e.data?.target||setTarget;
+      setTargetPlayer=eventIdentity(e,t,m,e.data?.role||e.data?.attackerRole||null);
+      attackPlayer=setTargetPlayer;
+      continue;
+    }
+    if(e.type==='setQuality'){
+      setQuality=e.data?.quality||setQuality;
+      pending=snapshot({setError:setQuality==='Errore'});
+      actions.push(pending);
+      if(setQuality==='Errore')pending=null;
+      continue;
+    }
+    if(e.type==='setterAttack'){
+      const p=eventIdentity(e,t,m,'P');
+      if(!secondTouch?.key)secondTouch=p;
+      setTarget='Secondo tocco offensivo';
+      setTargetPlayer=p;
+      attackPlayer=p;
+      pending=snapshot({setterAttack:true});
+      actions.push(pending);
+      continue;
+    }
+    if(e.type==='attackPlayer'){
+      attackPlayer=eventIdentity(e,t,m);
+      if(pending)pending.attackPlayer=attackPlayer;
+      continue;
+    }
+    if(e.type==='attack'){
+      const outcome=parseAttackOutcome(e);
+      const id=eventIdentity(e,t,m);
+      if(id?.key)attackPlayer=id;
+      if(pending){
+        pending.attackPlayer=attackPlayer||pending.attackPlayer;
+        pending.attackOutcome=outcome;
+        pending=null;
+      }else{
+        actions.push(snapshot({attackPlayer,attackOutcome:outcome}));
+      }
+      // The next construction will begin with a new first-touch event.
+      setTarget=null;setTargetPlayer=null;setQuality=null;attackPlayer=null;
+      continue;
+    }
+  }
+  return actions;
+}
+function setterFrontRow(rotation){return ['P2','P3','P4'].includes(rotation)}
+function attackEfficiency(outcomes){
+  const n=countTotal(outcomes);
+  if(!n)return null;
+  const p=outcomes.Punto||0;
+  const neg=(outcomes.Errore||0)+(outcomes['Murata punto']||0);
+  return Math.round(((p-neg)/n)*100);
+}
+function positiveReceive(q){return (q.Perfetta||0)+(q.Positiva||0)}
+function positiveDefense(q){return (q.Perfetta||0)+(q.Positiva||0)+(q.Salvata||0)}
+function computeStats(source,teamSource=null){
+  const m=source||currentReportMatch();
+  if(!m)return null;
+  const t=teamSource||currentReportTeam();
+  const rallies=m.rallies||[];
+  const players={};
+  (t?.players||[]).forEach(p=>ensurePlayerStat(players,{role:p.role,number:String(p.number??''),name:p.name||p.role,key:playerKey(p)}));
+
+  const serveOutcomes={},receptionQ={},attackOutcomes={},defenseQ={},coverageQ={},freeballQ={},blockOutcomes={},setQ={};
+  const targets={},targetPlayers={},origins={},qualityResults={},originResults={},targetAttack={},sequenceCounts={};
+  const pointReasonsWin={},pointReasonsLoss={},sideoutByReceptionQuality={},breakByServeOutcome={};
+  const rotations={};
+  ROT_ORDER.forEach(r=>rotations[r]={rallies:0,wins:0,losses:0,sideout:0,sideoutWins:0,break:0,breakWins:0,reception:{},attack:{},targets:{},serve:{}});
+
+  const selectedSetterPlayer=(t?.players||[]).find(p=>p.role==='P'&&String(p.number)===String(m.setterNumber))
+    ||(t?.players||[]).find(p=>p.role==='P')
+    ||{number:m.setterNumber||'',name:'Palleggiatrice',role:'P'};
+  const selectedSetter={role:'P',number:String(selectedSetterPlayer.number??''),name:selectedSetterPlayer.name||'Palleggiatrice',key:playerKey(selectedSetterPlayer)};
+  const setterStats={
+    identity:selectedSetter,sets:0,secondTouchAttacks:0,quality:{},targets:{},attackers:{},origins:{},
+    firstTouchQualities:{},rotations:{},frontBack:{front:0,back:0},rallyWins:0,attackOutcomes:{},targetPerformance:{},
+    qualityTargets:{},originTargets:{},rotationTargets:{},attackerPerformance:{},qualityPerformance:{}
+  };
+
+  let completeRotationContext=0,completeServiceContext=0,structuredPlayerEvents=0,totalPlayerEvents=0;
+  let longestRun=0,currentRun=0;
+
+  rallies.forEach(r=>{
+    const opening=rallyOpeningContext(r,t,m);
+    const actions=rallyActions(r,t,m);
+    const rotName=r.rotation||'—';
+    if(r.rotation)completeRotationContext++;
+    if(typeof r.servingBefore==='boolean')completeServiceContext++;
+    const rot=rotations[rotName]||(rotations[rotName]={rallies:0,wins:0,losses:0,sideout:0,sideoutWins:0,break:0,breakWins:0,reception:{},attack:{},targets:{},serve:{}});
+    rot.rallies++;
+    if(r.winner==='us'){rot.wins++;currentRun++;longestRun=Math.max(longestRun,currentRun)}else{rot.losses++;currentRun=0}
+    if(r.servingBefore===false){rot.sideout++;if(r.winner==='us')rot.sideoutWins++}
+    if(r.servingBefore===true){rot.break++;if(r.winner==='us')rot.breakWins++}
+    if(opening.receiveQuality)inc(rot.reception,opening.receiveQuality);
+    if(opening.serveOutcome)inc(rot.serve,opening.serveOutcome);
+
+    inc(r.winner==='us'?pointReasonsWin:pointReasonsLoss,r.reason||'Altro');
+
+    if(r.servingBefore===false&&opening.receiveQuality){
+      if(!sideoutByReceptionQuality[opening.receiveQuality])sideoutByReceptionQuality[opening.receiveQuality]={n:0,wins:0};
+      sideoutByReceptionQuality[opening.receiveQuality].n++;
+      if(r.winner==='us')sideoutByReceptionQuality[opening.receiveQuality].wins++;
+    }
+    if(r.servingBefore===true&&opening.serveOutcome){
+      if(!breakByServeOutcome[opening.serveOutcome])breakByServeOutcome[opening.serveOutcome]={n:0,wins:0};
+      breakByServeOutcome[opening.serveOutcome].n++;
+      if(r.winner==='us')breakByServeOutcome[opening.serveOutcome].wins++;
+    }
+
+    // Count all constructions/sets/attacks inside the rally, not only the final one.
+    actions.forEach(a=>{
+      if(a.attackOutcome)inc(rot.attack,a.attackOutcome);
+      if(a.setTarget)inc(rot.targets,a.setTarget);
+
+      if(a.origin){
+        inc(origins,a.origin);
+        if(!originResults[a.origin])originResults[a.origin]={n:0,wins:0};
+        originResults[a.origin].n++;if(r.winner==='us')originResults[a.origin].wins++;
+      }
+      if(a.firstTouchQuality){
+        if(!qualityResults[a.firstTouchQuality])qualityResults[a.firstTouchQuality]={n:0,wins:0};
+        qualityResults[a.firstTouchQuality].n++;if(r.winner==='us')qualityResults[a.firstTouchQuality].wins++;
+      }
+
+      if(a.setTarget){
+        inc(targets,a.setTarget);
+        if(a.setTargetPlayer?.key)inc(targetPlayers,a.setTargetPlayer.key);
+        if(!targetAttack[a.setTarget])targetAttack[a.setTarget]={n:0,points:0,errors:0,blocked:0,defended:0,wins:0};
+        const ta=targetAttack[a.setTarget];ta.n++;
+        if(a.attackOutcome==='Punto')ta.points++;
+        if(a.attackOutcome==='Errore')ta.errors++;
+        if(a.attackOutcome==='Murata punto')ta.blocked++;
+        if(a.attackOutcome==='Difeso')ta.defended++;
+        if(r.winner==='us')ta.wins++;
+      }
+
+      if(a.attackPlayer?.key&&a.attackOutcome){
+        const ps=ensurePlayerStat(players,a.attackPlayer);
+        ps.attack.n++;inc(ps.attack.outcomes,a.attackOutcome);if(a.setTarget)inc(ps.attack.targets,a.setTarget);
+      }
+
+      if(a.secondTouch?.key&&a.setTarget&&!a.setterAttack){
+        const ps=ensurePlayerStat(players,a.secondTouch);
+        ps.set.n++;inc(ps.set.targets,a.setTarget);if(a.setQuality)inc(ps.set.q,a.setQuality);if(r.winner==='us')ps.set.rallyWins++;
+      }
+
+      const setterHandled=samePlayer(a.secondTouch,selectedSetter);
+      if(setterHandled&&a.setterAttack)setterStats.secondTouchAttacks++;
+      if(setterHandled&&a.setTarget&&!a.setterAttack){
+        setterStats.sets++;
+        if(a.setQuality)inc(setterStats.quality,a.setQuality);
+        inc(setterStats.targets,a.setTarget);
+        if(a.setTargetPlayer?.key)inc(setterStats.attackers,a.setTargetPlayer.key);
+        if(a.origin)inc(setterStats.origins,a.origin);
+        if(a.firstTouchQuality)inc(setterStats.firstTouchQualities,a.firstTouchQuality);
+        inc(setterStats.rotations,rotName);
+        if(setterFrontRow(rotName))setterStats.frontBack.front++;else setterStats.frontBack.back++;
+        if(r.winner==='us')setterStats.rallyWins++;
+        if(a.attackOutcome)inc(setterStats.attackOutcomes,a.attackOutcome);
+
+        if(!setterStats.targetPerformance[a.setTarget])setterStats.targetPerformance[a.setTarget]={n:0,points:0,errors:0,blocked:0,defended:0,wins:0};
+        const sp=setterStats.targetPerformance[a.setTarget];sp.n++;
+        if(a.attackOutcome==='Punto')sp.points++;
+        if(a.attackOutcome==='Errore')sp.errors++;
+        if(a.attackOutcome==='Murata punto')sp.blocked++;
+        if(a.attackOutcome==='Difeso')sp.defended++;
+        if(r.winner==='us')sp.wins++;
+
+        const qKey=a.firstTouchQuality||'Senza qualità';
+        if(!setterStats.qualityTargets[qKey])setterStats.qualityTargets[qKey]={};
+        inc(setterStats.qualityTargets[qKey],a.setTarget);
+
+        const oKey=a.origin||'Senza origine';
+        if(!setterStats.originTargets[oKey])setterStats.originTargets[oKey]={};
+        inc(setterStats.originTargets[oKey],a.setTarget);
+
+        if(!setterStats.rotationTargets[rotName])setterStats.rotationTargets[rotName]={};
+        inc(setterStats.rotationTargets[rotName],a.setTarget);
+
+        if(a.setTargetPlayer?.key){
+          if(!setterStats.attackerPerformance[a.setTargetPlayer.key])setterStats.attackerPerformance[a.setTargetPlayer.key]={n:0,points:0,errors:0,blocked:0,defended:0,wins:0};
+          const ap=setterStats.attackerPerformance[a.setTargetPlayer.key];ap.n++;
+          if(a.attackOutcome==='Punto')ap.points++;
+          if(a.attackOutcome==='Errore')ap.errors++;
+          if(a.attackOutcome==='Murata punto')ap.blocked++;
+          if(a.attackOutcome==='Difeso')ap.defended++;
+          if(r.winner==='us')ap.wins++;
+        }
+
+        const sq=a.setQuality||'Senza qualità';
+        if(!setterStats.qualityPerformance[sq])setterStats.qualityPerformance[sq]={n:0,points:0,wins:0};
+        setterStats.qualityPerformance[sq].n++;
+        if(a.attackOutcome==='Punto')setterStats.qualityPerformance[sq].points++;
+        if(r.winner==='us')setterStats.qualityPerformance[sq].wins++;
+      }
+
+      if(a.setTarget){
+        const first=a.firstTouchQuality||a.origin||'Senza primo tocco';
+        const out=a.attackOutcome||(a.setError?'Errore alzata':(r.winner==='us'?'Rally vinto':'Rally perso'));
+        const key=`${first} → ${a.setTarget} → ${out}`;
+        if(!sequenceCounts[key])sequenceCounts[key]={n:0,wins:0};
+        sequenceCounts[key].n++;if(r.winner==='us')sequenceCounts[key].wins++;
+      }
+    });
+
+    // Fundamental/player events. These are independent from the number of attack cycles.
+    let recv=null,def=null,cov=null,free=null,block=null;
+    for(const e of (r.events||[])){
+      if(['serve','receivePlayer','defensePlayer','coverPlayer','freeballPlayer','secondTouch','setTarget','attackPlayer','attack','blockPlayer','block'].includes(e.type)){
+        totalPlayerEvents++;
+        if(e.data?.playerNumber||e.data?.role||e.data?.serverRole)structuredPlayerEvents++;
+      }
+      if(e.type==='serve'){
+        const id=eventIdentity(e,t,m,e.data?.serverRole||null),ps=ensurePlayerStat(players,id),o=parseServeOutcome(e);
+        if(ps){ps.serve.n++;inc(ps.serve.outcomes,o)}inc(serveOutcomes,o);
+      }
+      if(e.type==='receivePlayer')recv=eventIdentity(e,t,m);
+      if(e.type==='receiveQuality'){
+        const id=eventIdentity(e,t,m),actual=id?.key?id:recv,q=e.data?.quality;
+        inc(receptionQ,q);const ps=ensurePlayerStat(players,actual);if(ps){ps.receive.n++;inc(ps.receive.q,q)}
+      }
+      if(e.type==='defensePlayer')def=eventIdentity(e,t,m);
+      if(e.type==='defenseQuality'){
+        const id=eventIdentity(e,t,m),actual=id?.key?id:def,q=e.data?.quality;
+        inc(defenseQ,q);const ps=ensurePlayerStat(players,actual);if(ps){ps.defense.n++;inc(ps.defense.q,q)}
+      }
+      if(e.type==='coverPlayer')cov=eventIdentity(e,t,m);
+      if(e.type==='coverQuality'){
+        const id=eventIdentity(e,t,m),actual=id?.key?id:cov,q=e.data?.quality;
+        inc(coverageQ,q);const ps=ensurePlayerStat(players,actual);if(ps){ps.cover.n++;inc(ps.cover.q,q)}
+      }
+      if(e.type==='freeballPlayer')free=eventIdentity(e,t,m);
+      if(e.type==='freeballQuality'){
+        const id=eventIdentity(e,t,m),actual=id?.key?id:free,q=e.data?.quality;
+        inc(freeballQ,q);const ps=ensurePlayerStat(players,actual);if(ps){ps.freeball.n++;inc(ps.freeball.q,q)}
+      }
+      if(e.type==='secondTouch'){
+        const id=eventIdentity(e,t,m),ps=ensurePlayerStat(players,id);if(ps)ps.secondTouch++;
+      }
+      if(e.type==='blockPlayer')block=eventIdentity(e,t,m);
+      if(e.type==='block'){
+        const id=eventIdentity(e,t,m),actual=id?.key?id:block,o=parseBlockOutcome(e);
+        inc(blockOutcomes,o);const ps=ensurePlayerStat(players,actual);if(ps){ps.block.n++;inc(ps.block.outcomes,o)}
+      }
+      if(e.type==='setQuality')inc(setQ,e.data?.quality);
+      if(e.type==='attack')inc(attackOutcomes,parseAttackOutcome(e));
+    }
+  });
+
+  const sideoutR=rallies.filter(r=>r.servingBefore===false),breakR=rallies.filter(r=>r.servingBefore===true);
+  const wins=rallies.filter(r=>r.winner==='us').length;
+  const serveN=countTotal(serveOutcomes),aces=serveOutcomes.Ace||0,serveErr=serveOutcomes.Errore||0;
+  const recN=countTotal(receptionQ),recPos=positiveReceive(receptionQ),recErr=receptionQ.Errore||0;
+  const attackN=countTotal(attackOutcomes),attackPoints=attackOutcomes.Punto||0;
+  const attackNeg=(attackOutcomes.Errore||0)+(attackOutcomes['Murata punto']||0);
+  const attackEff=attackN?Math.round(((attackPoints-attackNeg)/attackN)*100):0;
+
+  return {
+    score:[m.our||0,m.their||0],
+    rallies:rallies.length,wins,losses:rallies.length-wins,winPct:pct(wins,rallies.length),
+    sideout:{n:sideoutR.length,wins:sideoutR.filter(r=>r.winner==='us').length,p:pct(sideoutR.filter(r=>r.winner==='us').length,sideoutR.length)},
+    breakPoint:{n:breakR.length,wins:breakR.filter(r=>r.winner==='us').length,p:pct(breakR.filter(r=>r.winner==='us').length,breakR.length)},
+    serveOutcomes,receptionQ,attackOutcomes,defenseQ,coverageQ,freeballQ,blockOutcomes,setQ,
+    serveN,aces,serveErr,recN,recPos,recErr,attackN,attackPoints,attackNeg,attackEff,longestRun,
+    players,rotations,targets,targetPlayers,origins,qualityResults,originResults,targetAttack,
+    pointReasonsWin,pointReasonsLoss,sideoutByReceptionQuality,breakByServeOutcome,setterStats,sequenceCounts,
+    completeness:{
+      rotation:pct(completeRotationContext,rallies.length),
+      service:pct(completeServiceContext,rallies.length),
+      structuredPlayers:pct(structuredPlayerEvents,totalPlayerEvents)
+    }
+  };
+}
+
+function stat(k,v){return `<div class="stat"><span>${esc(k)}</span><b>${esc(v)}</b></div>`}
+function qualityStats(o){
+  const total=countTotal(o);
+  if(!total)return '<p>Nessun dato.</p>';
+  return Object.entries(o).map(([k,v])=>`
+    <div class="quality-row"><div><b>${esc(k)}</b><div class="quality-bar"><div class="quality-fill" style="width:${pct(v,total)}%"></div></div></div>
+    <div><b>${v}</b><div class="mini">${pct(v,total)}%</div></div></div>`).join('');
+}
+function metric(label,value,sub=''){return `<div class="metric-card"><div class="value">${esc(value)}</div><div class="label">${esc(label)}</div>${sub?`<div class="sub">${esc(sub)}</div>`:''}</div>`}
+function sectionTitle(title,note=''){return `<div class="section-title"><h3>${esc(title)}</h3>${note?`<span class="muted-note">${esc(note)}</span>`:''}</div>`}
+function renderSimpleTable(headers,rows){
+  if(!rows.length)return '<p>Nessun dato.</p>';
+  return `<div class="table-wrap"><table class="report-table"><thead><tr>${headers.map((h,i)=>`<th class="${i?'num':''}">${esc(h)}</th>`).join('')}</tr></thead>
+  <tbody>${rows.map(row=>`<tr>${row.map((c,i)=>`<td class="${i?'num':''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`
+}
+function statForPlayer(s,p){
+  const key=playerKey(p);
+  return s.players[key]||emptyPlayerStat({role:p.role,number:String(p.number??''),name:p.name||p.role,key});
+}
+function renderDashboard(s){
+  return `
+    <div class="metric-grid">
+      ${metric('Rally vinti',`${s.winPct}%`,`${s.wins}/${s.rallies}`)}
+      ${metric('Side-out',`${s.sideout.p}%`,`${s.sideout.wins}/${s.sideout.n}`)}
+      ${metric('Break point',`${s.breakPoint.p}%`,`${s.breakPoint.wins}/${s.breakPoint.n}`)}
+      ${metric('Efficienza attacco',`${s.attackEff}%`,`${s.attackPoints} punti / ${s.attackN} attacchi`)}
+      ${metric('Ricezione positiva',`${pct(s.recPos,s.recN)}%`,`${s.recPos}/${s.recN}`)}
+      ${metric('Ace',`${pct(s.aces,s.serveN)}%`,`${s.aces}/${s.serveN}`)}
+      ${metric('Errori battuta',`${pct(s.serveErr,s.serveN)}%`,`${s.serveErr}/${s.serveN}`)}
+      ${metric('Miglior serie punti',s.longestRun||0,'punti consecutivi')}
+    </div>
+    ${sectionTitle('Come abbiamo fatto punto')}${qualityStats(s.pointReasonsWin)}
+    ${sectionTitle('Come abbiamo perso punto')}${qualityStats(s.pointReasonsLoss)}
+    ${sectionTitle('Qualità media')}
+    ${stat('Ricezione',avgQuality('reception',s.receptionQ)??'—')}
+    ${stat('Difesa',avgQuality('defense',s.defenseQ)??'—')}
+    ${stat('Alzata',avgQuality('set',s.setQ)??'—')}
+    ${sectionTitle('Integrità del report','utile soprattutto per set registrati con versioni precedenti')}
+    ${stat('Rally con rotazione contestualizzata',`${s.completeness.rotation}%`)}
+    ${stat('Rally con servizio/ricezione contestualizzati',`${s.completeness.service}%`)}
+    ${stat('Eventi giocatrice strutturati',`${s.completeness.structuredPlayers}%`)}
+  `;
+}
+function renderFundamentals(s){
+  const transitionRows=Object.entries(s.originResults).map(([k,x])=>[esc(k),`${x.n}`,`${pct(x.wins,x.n)}%`]);
+  const soRows=Object.entries(s.sideoutByReceptionQuality).map(([k,x])=>[esc(k),`${x.n}`,`${pct(x.wins,x.n)}%`]);
+  const bpRows=Object.entries(s.breakByServeOutcome).map(([k,x])=>[esc(k),`${x.n}`,`${pct(x.wins,x.n)}%`]);
+  return `
+    ${sectionTitle('Battuta',`${s.serveN} tentativi`)}
+    <div class="metric-grid">
+      ${metric('Ace',s.aces,`${pct(s.aces,s.serveN)}%`)}
+      ${metric('Errori',s.serveErr,`${pct(s.serveErr,s.serveN)}%`)}
+      ${metric('Media qualità',avgQuality('serve',s.serveOutcomes)??'—','scala 0–4')}
+      ${metric('Break point',`${s.breakPoint.p}%`)}
+    </div>${qualityStats(s.serveOutcomes)}
+    ${sectionTitle('Break point per esito battuta')}${renderSimpleTable(['Esito battuta','Rally','Break %'],bpRows)}
+
+    ${sectionTitle('Ricezione',`${s.recN} ricezioni`)}
+    <div class="metric-grid">
+      ${metric('Perfetta + positiva',`${pct(s.recPos,s.recN)}%`,`${s.recPos}/${s.recN}`)}
+      ${metric('Errori',`${pct(s.recErr,s.recN)}%`,`${s.recErr}/${s.recN}`)}
+      ${metric('Media qualità',avgQuality('reception',s.receptionQ)??'—','scala 0–4')}
+      ${metric('Side-out',`${s.sideout.p}%`)}
+    </div>${qualityStats(s.receptionQ)}
+    ${sectionTitle('Side-out per qualità ricezione')}${renderSimpleTable(['Qualità','Rally','Side-out %'],soRows)}
+
+    ${sectionTitle('Attacco',`${s.attackN} attacchi`)}
+    <div class="metric-grid">
+      ${metric('Punti',s.attackPoints,`${pct(s.attackPoints,s.attackN)}%`)}
+      ${metric('Efficienza',`${s.attackEff}%`,'(punti − errori − murate punto) / attacchi')}
+      ${metric('Errori + murate',s.attackNeg,`${pct(s.attackNeg,s.attackN)}%`)}
+      ${metric('Difesi',s.attackOutcomes.Difeso||0)}
+    </div>${qualityStats(s.attackOutcomes)}
+
+    ${sectionTitle('Difesa')}${qualityStats(s.defenseQ)}
+    ${sectionTitle('Muro')}${qualityStats(s.blockOutcomes)}
+    ${sectionTitle('Copertura')}${qualityStats(s.coverageQ)}
+    ${sectionTitle('Freeball')}${qualityStats(s.freeballQ)}
+    ${sectionTitle('Rendimento per origine della costruzione')}${renderSimpleTable(['Origine','Rally','Vittoria %'],transitionRows)}
+  `;
+}
+function renderPlayers(s,t=currentReportTeam()){
+  const roster=t?.players||[];
+  if(!roster.length)return '<p>Nessuna giocatrice.</p>';
+  return roster.map(p=>{
+    const x=statForPlayer(s,p);
+    const attEff=attackEfficiency(x.attack.outcomes);
+    const recPct=pct(positiveReceive(x.receive.q),x.receive.n);
+    const defPct=pct(positiveDefense(x.defense.q),x.defense.n);
+    return `<div class="player-card">
+      <div class="player-head"><div><div class="player-name">#${esc(p.number)} ${esc(p.name)}</div><span class="role-chip">${esc(p.role)}</span></div>
+      <div class="mini">${x.serve.n+x.receive.n+x.attack.n+x.defense.n+x.block.n+x.set.n} azioni principali</div></div>
+      <div class="mini-grid">
+        <div class="mini-stat"><b>${x.serve.n}</b><span>Battute</span></div>
+        <div class="mini-stat"><b>${x.receive.n}</b><span>Ricezioni</span></div>
+        <div class="mini-stat"><b>${x.attack.n}</b><span>Attacchi</span></div>
+        <div class="mini-stat"><b>${x.defense.n}</b><span>Difese</span></div>
+        <div class="mini-stat"><b>${x.block.n}</b><span>Muri</span></div>
+        <div class="mini-stat"><b>${x.set.n}</b><span>Alzate</span></div>
+      </div>
+      ${x.serve.n?stat('Ace / errori',`${x.serve.outcomes.Ace||0} / ${x.serve.outcomes.Errore||0}`):''}
+      ${x.receive.n?stat('Ricezione positiva',`${recPct}%`):''}
+      ${x.attack.n?stat('Punti attacco',`${x.attack.outcomes.Punto||0}/${x.attack.n}`):''}
+      ${x.attack.n?stat('Efficienza attacco',`${attEff??0}%`):''}
+      ${x.defense.n?stat('Difesa positiva/salvata',`${defPct}%`):''}
+      ${x.block.n?stat('Muri punto',x.block.outcomes.Punto||0):''}
+      ${x.set.n?stat('Rally vinti dopo sua alzata',`${pct(x.set.rallyWins,x.set.n)}%`):''}
+    </div>`
+  }).join('');
+}
+function renderRotations(s){
+  return ROT_ORDER.map(r=>{
+    const x=s.rotations[r]||{rallies:0,wins:0,sideout:0,sideoutWins:0,break:0,breakWins:0,reception:{},attack:{},targets:{}};
+    const recN=countTotal(x.reception),recPos=positiveReceive(x.reception),attN=countTotal(x.attack);
+    const attP=x.attack.Punto||0,attNeg=(x.attack.Errore||0)+(x.attack['Murata punto']||0);
+    const eff=attN?Math.round(((attP-attNeg)/attN)*100):0;
+    return `<div class="rotation-card">
+      <div class="rotation-head"><h3>${r}</h3><span class="badge">${x.rallies?`${pct(x.wins,x.rallies)}% rally vinti`:'nessun rally'}</span></div>
+      <div class="metric-grid">
+        ${metric('Rally',x.rallies,`${x.wins} vinti`)}
+        ${metric('Side-out',`${pct(x.sideoutWins,x.sideout)}%`,`${x.sideoutWins}/${x.sideout}`)}
+        ${metric('Break point',`${pct(x.breakWins,x.break)}%`,`${x.breakWins}/${x.break}`)}
+        ${metric('Eff. attacco',`${eff}%`,`${attP}/${attN} punti`)}
+        ${metric('Ricez. positiva',`${pct(recPos,recN)}%`,`${recPos}/${recN}`)}
+        ${metric('Alzate',countTotal(x.targets))}
+      </div>
+      ${Object.keys(x.targets||{}).length?`<div class="mini">Distribuzione: ${Object.entries(x.targets).map(([k,v])=>`${esc(k)} ${v}`).join(' · ')}</div>`:''}
+    </div>`
+  }).join('');
+}
+function setterTopEntry(obj){
+  const arr=Object.entries(obj||{}).sort((a,b)=>b[1]-a[1]);
+  return arr.length?arr[0]:null;
+}
+function setterDistributionBalance(obj){
+  const total=countTotal(obj);
+  if(!total)return {topShare:0,used:0};
+  const vals=Object.values(obj).sort((a,b)=>b-a);
+  return {topShare:pct(vals[0]||0,total),used:vals.filter(x=>x>0).length};
+}
+function renderSetterMatrix(title,rowMap){
+  const rowNames=Object.keys(rowMap||{});
+  const allTargets=[...new Set(rowNames.flatMap(r=>Object.keys(rowMap[r]||{})))];
+  if(!rowNames.length||!allTargets.length)return `${sectionTitle(title)}<p>Nessun dato.</p>`;
+  const header=`<tr><th>${esc(title)}</th>${allTargets.map(t=>`<th>${esc(t)}</th>`).join('')}<th>Tot.</th></tr>`;
+  const body=rowNames.map(r=>{
+    const row=rowMap[r]||{},tot=countTotal(row);
+    return `<tr><td><b>${esc(r)}</b></td>${allTargets.map(t=>`<td>${row[t]||0}<div class="mini">${pct(row[t]||0,tot)}%</div></td>`).join('')}<td><b>${tot}</b></td></tr>`;
+  }).join('');
+  return `${sectionTitle(title)}<div class="table-wrap"><table class="setter-matrix"><thead>${header}</thead><tbody>${body}</tbody></table></div>`;
+}
+function setterInterpretation(ss,t){
+  if(!ss.sets)return '<p>Nessuna alzata della palleggiatrice registrata.</p>';
+  const insights=[];
+  const topTarget=setterTopEntry(ss.targets);
+  const dist=setterDistributionBalance(ss.targets);
+  if(topTarget)insights.push(`La destinazione più usata è <b>${esc(topTarget[0])}</b>: ${topTarget[1]} alzate, pari al ${pct(topTarget[1],ss.sets)}% del totale.`);
+  if(dist.used>=4)insights.push(`Sono state utilizzate <b>${dist.used} destinazioni diverse</b>. La prima opzione pesa per il ${dist.topShare}%: questo indica quanto la distribuzione è concentrata sulla soluzione principale.`);
+  else insights.push(`Sono state utilizzate <b>${dist.used} destinazioni</b>; la prima soluzione pesa per il ${dist.topShare}% del totale.`);
+
+  const bestTarget=Object.entries(ss.targetPerformance||{}).filter(([,x])=>x.n>=2).sort((a,b)=>{
+    const ea=a[1].n?((a[1].points-a[1].errors-a[1].blocked)/a[1].n):-99;
+    const eb=b[1].n?((b[1].points-b[1].errors-b[1].blocked)/b[1].n):-99;
+    return eb-ea;
+  })[0];
+  if(bestTarget){
+    const [name,x]=bestTarget;
+    const eff=Math.round(((x.points-x.errors-x.blocked)/x.n)*100);
+    insights.push(`Tra le destinazioni con almeno 2 palloni, <b>${esc(name)}</b> ha la migliore efficienza d'attacco collegata: ${eff}% su ${x.n} attacchi.`);
+  }
+
+  const qTop=setterTopEntry(ss.firstTouchQualities);
+  if(qTop)insights.push(`La situazione di primo tocco più frequente prima dell'alzata è <b>${esc(qTop[0])}</b> (${qTop[1]} azioni).`);
+  insights.push(`Dopo una sua alzata la squadra ha vinto il ${pct(ss.rallyWins,ss.sets)}% dei rally (${ss.rallyWins}/${ss.sets}). Questo dato misura l'esito complessivo del rally, non soltanto la qualità tecnica dell'alzata.`);
+  return insights.map((x,i)=>`<div class="setter-insight"><div class="mark">${i+1}</div><div class="txt">${x}</div></div>`).join('');
+}
+function renderSetter(s,t=currentReportTeam()){
+  const ss=s.setterStats,total=ss.sets;
+  const setterPlayer=(t?.players||[]).find(p=>playerKey(p)===ss.identity.key) || ss.identity;
+  const setterPlayerStats=s.players[ss.identity.key] || emptyPlayerStat(ss.identity);
+
+  const playerNameFromKey=key=>{
+    const p=(t?.players||[]).find(x=>playerKey(x)===key);
+    return p?`#${p.number} ${p.name} (${p.role})`:key;
+  };
+
+  const targetRows=Object.entries(ss.targets).sort((a,b)=>b[1]-a[1]).map(([k,v])=>[esc(k),`${v}`,`${pct(v,total)}%`]);
+  const attackerRows=Object.entries(ss.attackerPerformance).sort((a,b)=>b[1].n-a[1].n).map(([key,x])=>[
+    esc(playerNameFromKey(key)),
+    `${x.n}`,
+    `${pct(x.n,total)}%`,
+    `${pct(x.points,x.n)}%`,
+    `${x.n?Math.round(((x.points-x.errors-x.blocked)/x.n)*100):0}%`,
+    `${pct(x.wins,x.n)}%`
+  ]);
+  const rotationRows=ROT_ORDER.map(r=>[r,`${ss.rotations[r]||0}`,`${pct(ss.rotations[r]||0,total)}%`]);
+  const perfRows=Object.entries(ss.targetPerformance).sort((a,b)=>b[1].n-a[1].n).map(([k,x])=>[
+    esc(k),`${x.n}`,`${pct(x.points,x.n)}%`,`${x.n?Math.round(((x.points-x.errors-x.blocked)/x.n)*100):0}%`,`${pct(x.defended,x.n)}%`,`${pct(x.wins,x.n)}%`
+  ]);
+  const qualityPerfRows=Object.entries(ss.qualityPerformance).map(([k,x])=>[
+    esc(k),`${x.n}`,`${pct(x.points,x.n)}%`,`${pct(x.wins,x.n)}%`
+  ]);
+
+  const ownActions=`
+    ${stat('Difese',setterPlayerStats.defense.n)}
+    ${setterPlayerStats.defense.n?stat('Difesa positiva/salvata',`${pct(positiveDefense(setterPlayerStats.defense.q),setterPlayerStats.defense.n)}%`):''}
+    ${stat('Ricezioni',setterPlayerStats.receive.n)}
+    ${setterPlayerStats.receive.n?stat('Ricezione positiva',`${pct(positiveReceive(setterPlayerStats.receive.q),setterPlayerStats.receive.n)}%`):''}
+    ${stat('Muri',setterPlayerStats.block.n)}
+    ${setterPlayerStats.block.n?stat('Muri punto',setterPlayerStats.block.outcomes.Punto||0):''}
+  `;
+
+  return `
+    <div class="setter-summary">
+      <h3>#${esc(setterPlayer.number||'')} ${esc(setterPlayer.name||'Palleggiatrice')} · analisi del set</h3>
+      <p>Questa sezione separa <b>volume di distribuzione</b>, <b>qualità tecnica dell’alzata</b> e <b>rendimento dell’attacco successivo</b>. In questo modo una scelta frequente non viene automaticamente interpretata come una scelta efficace, e viceversa.</p>
+    </div>
+
+    <div class="metric-grid">
+      ${metric('Alzate',ss.sets)}
+      ${metric('Rally vinti dopo alzata',`${pct(ss.rallyWins,ss.sets)}%`,`${ss.rallyWins}/${ss.sets}`)}
+      ${metric('Attacchi di seconda',ss.secondTouchAttacks)}
+      ${metric('Prima linea',`${pct(ss.frontBack.front,total)}%`,`${ss.frontBack.front}/${total}`)}
+      ${metric('Seconda linea',`${pct(ss.frontBack.back,total)}%`,`${ss.frontBack.back}/${total}`)}
+      ${metric('Media qualità alzata',avgQuality('set',ss.quality)??'—','scala interna 0–4')}
+    </div>
+
+    ${sectionTitle('Lettura sintetica')}
+    <div class="setter-explain"><b>Come leggerla:</b> sono osservazioni descrittive generate dai dati del set. Non sono un voto alla palleggiatrice: servono a individuare rapidamente volume, concentrazione della distribuzione e rendimento delle diverse scelte.</div>
+    ${setterInterpretation(ss,t)}
+
+    ${sectionTitle('Qualità tecnica dell’alzata')}
+    <div class="setter-explain"><b>Qualità alzata</b> descrive quanto il pallone permette all’attaccante di eseguire l’azione prevista. È separata dall’esito dell’attacco: una buona alzata può comunque finire difesa o in errore.</div>
+    ${qualityStats(ss.quality)}
+    ${renderSimpleTable(['Qualità alzata','Alzate','Punto attacco %','Rally vinti %'],qualityPerfRows)}
+
+    ${sectionTitle('Distribuzione generale')}
+    <div class="setter-explain"><b>Quota</b> = percentuale delle alzate indirizzate verso quella destinazione. Serve a capire quanto la distribuzione sia concentrata o variata.</div>
+    ${renderSimpleTable(['Destinazione','Alzate','Quota'],targetRows)}
+
+    ${sectionTitle('Rendimento per destinazione')}
+    <div class="setter-explain"><b>Punto %</b> misura gli attacchi chiusi direttamente a punto. <b>Efficienza</b> = (punti − errori − murate punto) / attacchi. <b>Rally vinti</b> guarda invece l’esito dell’intero rally dopo quella scelta.</div>
+    ${renderSimpleTable(['Destinazione','Att.','Punto %','Eff.','Difeso %','Rally vinti'],perfRows)}
+
+    ${sectionTitle('Distribuzione e rendimento per attaccante')}
+    <div class="setter-explain">Qui la destinazione viene attribuita alla <b>giocatrice effettivamente servita</b>, non soltanto alla zona del campo. Questo permette di separare, per esempio, due bande che attaccano dalla stessa zona in rotazioni diverse.</div>
+    ${renderSimpleTable(['Attaccante','Alzate','Quota','Punto %','Eff.','Rally vinti'],attackerRows)}
+
+    ${renderSetterMatrix('Distribuzione per qualità del primo tocco',ss.qualityTargets)}
+    <div class="setter-explain">Questa matrice mostra <b>come cambia la distribuzione quando cambia la qualità del primo tocco</b>. Ogni riga somma le alzate effettuate in quella specifica situazione.</div>
+
+    ${renderSetterMatrix('Distribuzione per origine della costruzione',ss.originTargets)}
+    <div class="setter-explain">Confronta la distribuzione quando l’azione nasce da <b>ricezione, difesa, copertura o freeball</b>. È utile per distinguere side-out e contrattacco.</div>
+
+    ${renderSetterMatrix('Distribuzione per rotazione',ss.rotationTargets)}
+    <div class="setter-explain">Mostra le scelte della palleggiatrice in P1–P6. Le percentuali sono calcolate all’interno della singola rotazione, quindi indicano la preferenza relativa in quella P.</div>
+
+    ${sectionTitle('Prima linea vs seconda linea')}
+    ${stat('Alzate con palleggiatrice in prima linea',`${ss.frontBack.front} · ${pct(ss.frontBack.front,total)}%`)}
+    ${stat('Alzate con palleggiatrice in seconda linea',`${ss.frontBack.back} · ${pct(ss.frontBack.back,total)}%`)}
+
+    ${sectionTitle('Esito dell’attacco dopo l’alzata')}
+    ${qualityStats(ss.attackOutcomes)}
+
+    ${sectionTitle('Azioni proprie della palleggiatrice')}
+    <div class="setter-explain">Queste sono azioni della palleggiatrice <b>diverse dall’alzata</b>, utili per leggere il suo contributo complessivo al set.</div>
+    ${ownActions}
+  `;
+}
+
+function renderSequences(s){
+  const topSeq=Object.entries(s.sequenceCounts).sort((a,b)=>b[1].n-a[1].n).slice(0,30);
+  const targetRows=Object.entries(s.targetAttack).sort((a,b)=>b[1].n-a[1].n).map(([target,x])=>[
+    esc(target),`${x.n}`,`${pct(x.points,x.n)}%`,`${x.n?Math.round(((x.points-x.errors-x.blocked)/x.n)*100):0}%`,`${pct(x.wins,x.n)}%`
+  ]);
+  const qualityRows=Object.entries(s.qualityResults).sort((a,b)=>b[1].n-a[1].n).map(([q,x])=>[esc(q),`${x.n}`,`${pct(x.wins,x.n)}%`]);
+  const originRows=Object.entries(s.originResults).sort((a,b)=>b[1].n-a[1].n).map(([q,x])=>[esc(q),`${x.n}`,`${pct(x.wins,x.n)}%`]);
+  return `
+    ${sectionTitle('Combinazioni più frequenti','primo tocco → destinazione → esito')}
+    ${topSeq.length?topSeq.map(([name,x])=>`<div class="sequence-card"><div class="sequence-line">${esc(name)}</div><div class="sequence-meta"><span>${x.n} volte</span><span>${pct(x.wins,x.n)}% rally vinti</span></div></div>`).join(''):'<p>Nessuna sequenza disponibile.</p>'}
+    ${sectionTitle('Rendimento per destinazione d’alzata')}${renderSimpleTable(['Destinazione','Att.','Punto %','Eff.','Rally vinti'],targetRows)}
+    ${sectionTitle('Rendimento per qualità del primo tocco')}${renderSimpleTable(['Qualità','Rally','Vittoria'],qualityRows)}
+    ${sectionTitle('Rendimento per origine')}${renderSimpleTable(['Origine','Rally','Vittoria'],originRows)}
+  `;
+}
+function renderStats(mode){
+  statsMode=mode||'dashboard';
+  const rec=reportRecord(),b=document.getElementById('statsBody'),meta=document.getElementById('statsMeta');
+  document.querySelectorAll('.stats-nav .btn').forEach(x=>x.classList.remove('active-tab'));
+  document.getElementById(`statsTab-${statsMode}`)?.classList.add('active-tab');
+  document.getElementById('statsBackBtn').textContent=activeReportId?'← Archivio':'← Home';
+  if(!rec){meta.innerHTML='<p>Nessun set disponibile.</p>';b.innerHTML='<p>Nessuna statistica disponibile.</p>';return}
+  const m=rec.matchSnapshot,t=rec.teamSnapshot||team,s=computeStats(m,t);
+  meta.innerHTML=`
+    <div class="report-meta"><div><span class="badge">${rec.completed?'SET COMPLETATO':'SET IN CORSO'}</span>
+    <h3 style="margin-top:8px">${esc(t.name||'Squadra')} vs ${esc(m.opponent||'Avversari')}</h3>
+    <div class="mini">Set ${m.set} · ${formatDate(m.startedAt||m.id)} · ${s.rallies} rally</div></div>
+    <div class="report-score">${m.our||0} - ${m.their||0}</div></div>
+    <div class="report-export-actions">
+      <button class="btn" onclick="exportSetCsv()">CSV</button>
+      <button class="btn" onclick="exportSetJson()">JSON</button>
+      <button class="btn primary" onclick="printSetReport()">Stampa / PDF</button>
+    </div>`;
+  if(statsMode==='dashboard')b.innerHTML=renderDashboard(s);
+  else if(statsMode==='fundamentals')b.innerHTML=renderFundamentals(s);
+  else if(statsMode==='players')b.innerHTML=renderPlayers(s,t);
+  else if(statsMode==='rotations')b.innerHTML=renderRotations(s);
+  else if(statsMode==='setter')b.innerHTML=renderSetter(s,t);
+  else if(statsMode==='sequences')b.innerHTML=renderSequences(s);
+  else b.innerHTML=renderDashboard(s);
+}
+function safeFilename(s){
+  return String(s||'report').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zA-Z0-9._-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'');
+}
+function downloadBlob(filename,content,type){
+  const blob=new Blob([content],{type});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+function csvCell(v){
+  let s=String(v??'');
+  if(/^[=+\-@]/.test(s))s="'"+s;
+  return `"${s.replace(/"/g,'""')}"`;
+}
+function csvText(rows){return '\ufeff'+rows.map(r=>r.map(csvCell).join(';')).join('\r\n')}
+function exportRows(rec,s){
+  const m=rec.matchSnapshot,t=rec.teamSnapshot||team,rows=[];
+  rows.push(['SCOUT VOLLEY - REPORT SET']);
+  rows.push(['Squadra',t.name||'Squadra'],['Avversario',m.opponent||'Avversari'],['Set',m.set],['Punteggio',`${m.our}-${m.their}`],['Data',formatDate(m.startedAt||m.id)]);
+  rows.push([]);
+  rows.push(['RIEPILOGO','Valore']);
+  rows.push(['Rally',s.rallies],['Rally vinti',s.wins],['Rally persi',s.losses],['Rally vinti %',s.winPct],['Side-out %',s.sideout.p],['Break point %',s.breakPoint.p],['Efficienza attacco %',s.attackEff],['Ricezione positiva %',pct(s.recPos,s.recN)],['Ace %',pct(s.aces,s.serveN)],['Errori battuta %',pct(s.serveErr,s.serveN)]);
+  const addDist=(title,obj)=>{rows.push([]);rows.push([title,'N','%']);const tot=countTotal(obj);Object.entries(obj||{}).forEach(([k,v])=>rows.push([k,v,pct(v,tot)]))};
+  addDist('BATTUTA',s.serveOutcomes);addDist('RICEZIONE',s.receptionQ);addDist('ATTACCO',s.attackOutcomes);addDist('DIFESA',s.defenseQ);addDist('MURO',s.blockOutcomes);addDist('COPERTURA',s.coverageQ);addDist('FREEBALL',s.freeballQ);
+  rows.push([]);rows.push(['GIOCATRICI','Ruolo','Battute','Ace','Err batt','Ricezioni','Ricez + %','Attacchi','Punti att','Eff att %','Difese','Dif + %','Muri','Muri punto','Alzate']);
+  (t.players||[]).forEach(p=>{
+    const x=statForPlayer(s,p);
+    rows.push([`#${p.number} ${p.name}`,p.role,x.serve.n,x.serve.outcomes.Ace||0,x.serve.outcomes.Errore||0,x.receive.n,pct(positiveReceive(x.receive.q),x.receive.n),x.attack.n,x.attack.outcomes.Punto||0,attackEfficiency(x.attack.outcomes)??0,x.defense.n,pct(positiveDefense(x.defense.q),x.defense.n),x.block.n,x.block.outcomes.Punto||0,x.set.n]);
+  });
+  rows.push([]);rows.push(['ROTAZIONI','Rally','Vinti %','Side-out %','Break %','Eff att %','Ricez + %','Alzate']);
+  ROT_ORDER.forEach(r=>{
+    const x=s.rotations[r],attN=countTotal(x.attack),attP=x.attack.Punto||0,attNeg=(x.attack.Errore||0)+(x.attack['Murata punto']||0),recN=countTotal(x.reception);
+    rows.push([r,x.rallies,pct(x.wins,x.rallies),pct(x.sideoutWins,x.sideout),pct(x.breakWins,x.break),attN?Math.round(((attP-attNeg)/attN)*100):0,pct(positiveReceive(x.reception),recN),countTotal(x.targets)]);
+  });
+  rows.push([]);rows.push(['PALLEGGIATRICE','Valore']);
+  rows.push(['Alzate',s.setterStats.sets],['Rally vinti dopo alzata %',pct(s.setterStats.rallyWins,s.setterStats.sets)],['Attacchi di seconda',s.setterStats.secondTouchAttacks],['Media qualità alzata',avgQuality('set',s.setterStats.quality)??'']);
+  rows.push([]);rows.push(['DISTRIBUZIONE PALLEGGIATRICE','N','%']);
+  Object.entries(s.setterStats.targets).forEach(([k,v])=>rows.push([k,v,pct(v,s.setterStats.sets)]));
+  rows.push([]);rows.push(['RENDIMENTO DESTINAZIONI PALLEGGIATRICE','Attacchi','Punto %','Efficienza %','Difeso %','Rally vinti %']);
+  Object.entries(s.setterStats.targetPerformance).forEach(([k,x])=>rows.push([k,x.n,pct(x.points,x.n),x.n?Math.round(((x.points-x.errors-x.blocked)/x.n)*100):0,pct(x.defended,x.n),pct(x.wins,x.n)]));
+  rows.push([]);rows.push(['PALLEGGIATRICE - DISTRIBUZIONE PER QUALITA PRIMO TOCCO','Destinazione','N','% riga']);
+  Object.entries(s.setterStats.qualityTargets).forEach(([q,obj])=>{const tot=countTotal(obj);Object.entries(obj).forEach(([target,n])=>rows.push([q,target,n,pct(n,tot)]))});
+  rows.push([]);rows.push(['PALLEGGIATRICE - DISTRIBUZIONE PER ORIGINE','Destinazione','N','% riga']);
+  Object.entries(s.setterStats.originTargets).forEach(([q,obj])=>{const tot=countTotal(obj);Object.entries(obj).forEach(([target,n])=>rows.push([q,target,n,pct(n,tot)]))});
+  rows.push([]);rows.push(['PALLEGGIATRICE - DISTRIBUZIONE PER ROTAZIONE','Destinazione','N','% riga']);
+  Object.entries(s.setterStats.rotationTargets).forEach(([q,obj])=>{const tot=countTotal(obj);Object.entries(obj).forEach(([target,n])=>rows.push([q,target,n,pct(n,tot)]))});
+  rows.push([]);rows.push(['SEQUENZE','N','Rally vinti %']);
+  Object.entries(s.sequenceCounts).sort((a,b)=>b[1].n-a[1].n).forEach(([k,x])=>rows.push([k,x.n,pct(x.wins,x.n)]));
+  return rows;
+}
+function exportSetCsv(id=null){
+  const rec=archiveRecord(id);if(!rec){toast('Set non trovato');return}
+  const s=computeStats(rec.matchSnapshot,rec.teamSnapshot);
+  const base=safeFilename(`${rec.teamSnapshot?.name||'squadra'}-${rec.matchSnapshot?.opponent||'avversari'}-set-${rec.matchSnapshot?.set}`);
+  downloadBlob(`${base}-statistiche.csv`,csvText(exportRows(rec,s)),'text/csv;charset=utf-8');
+}
+function exportSetJson(id=null){
+  const rec=archiveRecord(id);if(!rec){toast('Set non trovato');return}
+  const s=computeStats(rec.matchSnapshot,rec.teamSnapshot);
+  const payload={schemaVersion:'1.0',exportedAt:new Date().toISOString(),set:rec,statistics:s};
+  const base=safeFilename(`${rec.teamSnapshot?.name||'squadra'}-${rec.matchSnapshot?.opponent||'avversari'}-set-${rec.matchSnapshot?.set}`);
+  downloadBlob(`${base}.json`,JSON.stringify(payload,null,2),'application/json;charset=utf-8');
+}
+function exportAllSetsCsv(){
+  if(match)syncCurrentSetToArchive();
+  if(!setArchive.length){toast('Archivio vuoto');return}
+  const rows=[['Squadra','Avversario','Set','Punteggio','Data','Rally','Vinti %','Side-out %','Break %','Eff att %','Ricez + %','Ace %','Err batt %']];
+  [...setArchive].sort((a,b)=>(a.matchSnapshot?.startedAt||0)-(b.matchSnapshot?.startedAt||0)).forEach(rec=>{
+    const s=computeStats(rec.matchSnapshot,rec.teamSnapshot);
+    rows.push([rec.teamSnapshot?.name||'',rec.matchSnapshot?.opponent||'',rec.matchSnapshot?.set||'',`${rec.matchSnapshot?.our||0}-${rec.matchSnapshot?.their||0}`,formatDate(rec.matchSnapshot?.startedAt||rec.matchSnapshot?.id),s.rallies,s.winPct,s.sideout.p,s.breakPoint.p,s.attackEff,pct(s.recPos,s.recN),pct(s.aces,s.serveN),pct(s.serveErr,s.serveN)]);
+  });
+  downloadBlob('scout-volley-riepilogo-set.csv',csvText(rows),'text/csv;charset=utf-8');
+}
+function exportAllSetsJson(){
+  if(match)syncCurrentSetToArchive();
+  const payload={schemaVersion:'1.0',exportedAt:new Date().toISOString(),sets:setArchive.map(rec=>({...rec,statistics:computeStats(rec.matchSnapshot,rec.teamSnapshot)}))};
+  downloadBlob('scout-volley-archivio-completo.json',JSON.stringify(payload,null,2),'application/json;charset=utf-8');
+}
+function printSetReport(id=null){
+  const rec=archiveRecord(id);if(!rec){toast('Set non trovato');return}
+  const s=computeStats(rec.matchSnapshot,rec.teamSnapshot),m=rec.matchSnapshot,t=rec.teamSnapshot||team;
+  const content=`
+    <h1>${esc(t.name||'Squadra')} vs ${esc(m.opponent||'Avversari')}</h1>
+    <div class="meta">Set ${m.set} · ${esc(formatDate(m.startedAt||m.id))} · <strong>${m.our||0}-${m.their||0}</strong></div>
+    <h2>Dashboard</h2>${renderDashboard(s)}
+    <h2>Fondamentali</h2>${renderFundamentals(s)}
+    <h2>Giocatrici</h2>${renderPlayers(s,t)}
+    <h2>Rotazioni</h2>${renderRotations(s)}
+    <h2>Palleggiatrice</h2>${renderSetter(s,t)}
+    <h2>Sequenze</h2>${renderSequences(s)}
+  `;
+  const w=window.open('','_blank');
+  if(!w){toast('Consenti i popup per Stampa / PDF');return}
+  w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>Scout Volley - Set ${esc(m.set)}</title><style>
+    body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;color:#111;margin:24px;line-height:1.35}
+    h1{margin:0 0 4px}h2{margin:28px 0 10px;border-bottom:2px solid #111;padding-bottom:5px}h3{margin:18px 0 7px}
+    .meta{color:#555;margin-bottom:18px}.metric-grid,.report-kpis,.mini-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}
+    .metric-card,.kpi,.mini-stat,.player-card,.rotation-card,.sequence-card{border:1px solid #ccc;border-radius:8px;padding:8px;margin:5px 0;break-inside:avoid}
+    .metric-card .value,.kpi b,.mini-stat b{font-size:18px;font-weight:800}.label,.sub,.mini,.muted-note,.sequence-meta{font-size:10px;color:#666}
+    .stat,.quality-row{display:flex;justify-content:space-between;border-bottom:1px solid #ddd;padding:5px 0}
+    .quality-bar{display:none}.report-table{width:100%;border-collapse:collapse;font-size:11px}.report-table th,.report-table td{border-bottom:1px solid #ddd;padding:5px;text-align:left}.report-table .num{text-align:right}
+    .badge,.role-chip{display:inline-block;border:1px solid #aaa;border-radius:999px;padding:2px 6px;font-size:9px}.player-head,.rotation-head,.section-title{display:flex;justify-content:space-between;align-items:center}
+    @media print{body{margin:10mm}.no-print{display:none}h2{break-after:avoid}.player-card,.rotation-card,.sequence-card{break-inside:avoid}}
+  </style></head><body>${content}</body></html>`);
+  w.document.close();
+  setTimeout(()=>{w.focus();w.print()},300);
+}
+
+function renderArchive(){
+  const box=document.getElementById('archiveBody');
+  if(match)syncCurrentSetToArchive();
+  const toolbar=`<div class="card archive-toolbar">
+    <button class="btn" onclick="exportAllSetsCsv()">Esporta riepilogo CSV</button>
+    <button class="btn ghost" onclick="exportAllSetsJson()">Backup completo JSON</button>
+  </div>`;
+  if(!setArchive.length){
+    box.innerHTML=toolbar+'<div class="card"><h3>Nessun set archiviato</h3><p>Appena inizi a scoutizzare un set verrà salvato automaticamente qui.</p></div>';
+    return;
+  }
+  const items=[...setArchive].sort((a,b)=>(b.matchSnapshot?.startedAt||b.savedAt||0)-(a.matchSnapshot?.startedAt||a.savedAt||0));
+  box.innerHTML=toolbar+items.map(item=>{
+    const m=item.matchSnapshot||{},t=item.teamSnapshot||team;
+    const isCurrent=match&&archiveIdFor(match)===item.archiveId&&!match.completed;
+    return `<div class="card archive-card">
+      <div class="row"><div>
+        <span class="archive-status ${item.completed?'done':'live'}">${item.completed?'COMPLETATO':'IN CORSO'}</span>
+        <h3 style="margin-top:8px">${esc(t.name||'Squadra')} vs ${esc(m.opponent||'Avversari')}</h3>
+      </div><div style="text-align:right"><b style="font-size:22px">${m.our||0} - ${m.their||0}</b><div class="mini">Set ${m.set||'—'}</div></div></div>
+      <div class="row" style="margin-top:8px"><span class="archive-date">${formatDate(m.startedAt||m.id)}</span><span class="badge">${(m.rallies||[]).length} rally</span></div>
+      <div class="archive-actions">
+        <button class="btn primary" onclick="openSetReport('${esc(item.archiveId)}')">Apri report</button>
+        ${isCurrent?`<button class="btn" onclick="resumeMatch()">Riprendi set</button>`:`<button class="btn ghost" onclick="openSetReport('${esc(item.archiveId)}')">Statistiche</button>`}
+      </div>
+      <div class="export-actions">
+        <button class="btn" onclick="exportSetCsv('${esc(item.archiveId)}')">CSV</button>
+        <button class="btn" onclick="exportSetJson('${esc(item.archiveId)}')">JSON</button>
+        <button class="btn" onclick="printSetReport('${esc(item.archiveId)}')">Stampa / PDF</button>
+      </div>
+    </div>`
+  }).join('');
+}
+
+function resetAll(){
+  if(confirm('Azzerare squadra e partita salvate su questo dispositivo?')){
+    localStorage.removeItem('sv_team');localStorage.removeItem('sv_match');localStorage.removeItem('sv_set_archive');team=DEFAULT_TEAM;match=null;setArchive=[];activeReportId=null;updateResume();toast('Dati azzerati')
+  }
+}
+if(match) syncCurrentSetToArchive();
+if('serviceWorker' in navigator){window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}))}
+updateResume();
+</script>
+</body>
+</html>
